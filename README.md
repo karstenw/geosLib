@@ -19,4 +19,4 @@ The results were mixed. Images looked either as BW or color right. Seldom both. 
 # Usage:
 ```
 python geoPaint2png.py testimages/*.cvt
-``
+```
