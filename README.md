@@ -13,6 +13,9 @@ The geoPaint files must be in CBM CVT format to be converted.
 
 The results were mixed. Images looked either as BW or color right. Seldom both. So the converter now creates both versions.
 
+This is very buggy & slow (ca. 1.5 s per document) but it works most of the time and was a nice trip to the past.
+
+
 # Requisites
 + [pillow](https://github.com/python-pillow/Pillow)
 
@@ -20,3 +23,17 @@ The results were mixed. Images looked either as BW or color right. Seldom both. 
 ```
 python geoPaint2png.py testimages/*.cvt
 ```
+
+# To do:
+
++ Finish the geoWrite converter. After all this is where it started.
+
++ Photo Album files
+
++ Photo Scrap files
+
++ Text Album files
+
++ Text Scrap files
+
+
