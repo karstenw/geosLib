@@ -11,6 +11,12 @@ This started as weekend hack and the code still looks like it but for now it can
 
 The geoPaint files must be in CBM CVT format to be converted.
 
+The results were mixed. Images looked either as BW or color right. Seldom both. So the converter now creates both versions.
+
 # Requisites
 + [pillow](https://github.com/python-pillow/Pillow)
 
+# Usage:
+```
+python geoPaint2png.py testimages/*.cvt
+``
