@@ -9,7 +9,7 @@ I transfered the geowrite2rtf C program to Python. Having a quick success extrac
 
 This started as weekend hack and the code still looks like it but for now it can convert most of the geoPaint files it encounters.
 
-The geoPaint files must be in CBM CVT format to be converted.
+The geoPaint and Album files must be in CBM CVT format to be converted.
 
 The speed is now acceptable. It has been at 1.5s for 1 document. Now it converts 75 documents in under 15s.
 
