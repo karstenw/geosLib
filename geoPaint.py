@@ -13,7 +13,6 @@ pp = pprint.pprint
 
 import PIL
 import PIL.Image
-import PIL.ImageDraw
 
 
 import c64Data
@@ -269,7 +268,7 @@ def imageband2PNG( image, cardsw, cardsh, version):
                             card.putpixel( (cx,cy), fg )
                         else:
                             card.putpixel( (cx,cy), bg )
-                if kwdbg:
+                if 0: #kwdbg:
                     card.save("lastcard %i %i.png" % (x,y))
                 colimg.paste(card, (x,y,x+8,y+8))
     

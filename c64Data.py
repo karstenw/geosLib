@@ -39,7 +39,7 @@ fontmapping = {
 
 c64colors = {
     0: (0,0,0),
-    1: (1,1,1),
+    1: (255,255,255),
     2: (0x88,0,0),
     3: (0xaa,0xff,0xee),
 
@@ -385,4 +385,21 @@ def hexdump( s ):
         sys.stdout.write(t+' ')
         if i & 15 == 15:
             sys.stdout.write('\n')
-        
+
+if __name__ == '__main__':
+    import PIL
+    import PIL.Image
+    import PIL.ImageDraw
+    
+    c64colrect = PIL.Image.new('RGB', (128,128), (1,1,1))
+    draw = PIL.ImageDraw.Draw( c64colrect )
+    for y in range(4):
+        for x in range(4):
+            col = y * 4 + x
+            print col
+            xc = x * 32
+            yc = y * 32
+            col = c64colors[col]
+            draw.rectangle((xc,yc,xc+32,yc+32), fill=col, outline=None)
+            
+    c64colrect.save("C64 colors.png")
