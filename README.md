@@ -20,7 +20,7 @@ The speed is now acceptable. It has been at 1.5s for 1 document. Now it converts
 
 + The essential bug that made me output bw and color versions has been found: the entry for white in the color look up table was wrong. White was nearly black...
 
-+ Photo Albume V1 files are now converted too. Each entry is written as a file.
++ Photo Albume V1 files are now converted too. Each entry is written as a file. Photo Albume V2 files are not read. They crash and I can't find any documentation.
 
 # Requisites
 + [pillow](https://github.com/python-pillow/Pillow)
