@@ -18,7 +18,7 @@ This is very buggy & slow (ca. 1.5 s per document) but it works most of the time
 
 # Update
 
-The essential bug that made me output bw and color versions has been found: the entry for white in the color look up table was wrong. White was nearly black.
+The essential bug that made me output bw and color versions has been found: the entry for white in the color look up table was wrong. White was nearly black...
 
 # Requisites
 + [pillow](https://github.com/python-pillow/Pillow)
