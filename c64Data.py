@@ -196,7 +196,9 @@ class VLIRFile(object):
 
 class SEQFile(object):
     def __init__(self):
-        pass
+        self.data = None
+        self.header = None
+        self.dirEntry = None
 
 
 class GEOSHeaderBlock(object):

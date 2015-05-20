@@ -13,12 +13,14 @@ The geoPaint files must be in CBM CVT format to be converted.
 
 The results were mixed. Images looked either as BW or color right. Seldom both. So the converter now creates both versions.
 
-This is very buggy & slow (ca. 1.5 s per document) but it works most of the time and was a nice trip to the past.
+The speed is now acceptable. It has been at 1.5s for 1 document. Now it converts 75 documents in under 15s.
 
 
 # Update
 
-The essential bug that made me output bw and color versions has been found: the entry for white in the color look up table was wrong. White was nearly black...
++ The essential bug that made me output bw and color versions has been found: the entry for white in the color look up table was wrong. White was nearly black...
+
++ Photo Albume V1 files are now converted too. Each entry is written as a file.
 
 # Requisites
 + [pillow](https://github.com/python-pillow/Pillow)
@@ -32,7 +34,7 @@ python geoPaint2png.py testimages/*.cvt
 
 + Finish the geoWrite converter. After all this is where it started.
 
-+ Photo Album files
++ Photo Album V2 files
 
 + Photo Scrap files
 

@@ -13,7 +13,7 @@ pp = pprint.pprint
 
 import PIL
 import PIL.Image
-
+import PIL.ImageDraw
 
 import c64Data
 hexdump = c64Data.hexdump
@@ -240,37 +240,98 @@ def imageband2PNG( image, cardsw, cardsh, version):
 
     # new image
     colimg = PIL.Image.new('RGB', (w,h), (1,1,1))
-    if 0: #version == 1:
-        colimg.paste( bwimg )
-    else:
-        # pdb.set_trace()
-        for row in range(cardsh):
-            base = row * cardsw
-            for col in range(cardsw):
-                idx = base + col
-                x = col * 8
-                y = row * 8
-                color = colorbands[row][col]
-                bgi = color & 15
-                bg = c64colors[bgi]
-                fgi = (color >> 4) & 15
-                fg = c64colors[fgi]
-            
-                bwcard = colsource.crop( (x,y,x+8,y+8) )
-                bwcard.load()
-                card = bwcard.copy()
-                card = card.convert("RGB")
-                for cy in range(8):
-                    for cx in range(8):
-                        v = bwcard.getpixel( (cx,cy) )
-                        # print v
-                        if v:
-                            card.putpixel( (cx,cy), fg )
-                        else:
-                            card.putpixel( (cx,cy), bg )
-                if 0: #kwdbg:
-                    card.save("lastcard %i %i.png" % (x,y))
-                colimg.paste(card, (x,y,x+8,y+8))
-    
+    for row in range(cardsh):
+        base = row * cardsw
+        for col in range(cardsw):
+            idx = base + col
+
+            x = col * 8
+            y = row * 8
+            color = colorbands[row][col]
+            bgi = color & 15
+            bg = c64colors[bgi]
+            fgi = (color >> 4) & 15
+            fg = c64colors[fgi]
+
+            draw = PIL.ImageDraw.Draw( colimg )
+            draw.rectangle( (x,y,x+8,y+8), fill=bg)
+
+            bwcard = colsource.crop( (x,y,x+8,y+8) )
+            bwcard.load()
+            draw.bitmap( (x,y), bwcard, fill=fg)
+        return colimg, bwimg
+
     return (colimg, bwimg)
     # return bwimg
+
+
+
+
+def photoScrap( s ):
+    if s == None:
+        return
+    cardsw = ord(s[0])
+    w = cardsw * 8
+    h = ord(s[2]) * 256 + ord(s[1])
+    cardsh = h >> 3
+    noofcards = cardsw * cardsh
+    image = []
+    
+    image = expandScrapStream(s[3:])
+
+    # pdb.set_trace()
+
+    colorbands = []
+    # extract color data
+    offset = cardsw * h
+    for row in range(cardsh):
+        base = offset + row * cardsw
+        end = base + cardsw
+        band = image[base:end]
+        colorbands.append( band )
+
+    # create bw image
+    bwbytes = []
+    colbytes = []
+    for y in range(h):
+        for x in range(cardsw):
+            idx = y * cardsw + x
+            cardbyte = image[idx]
+            colbytes.append( chr(cardbyte) )
+            cardbyte = cardbyte ^ 0xff
+            bwbytes.append( chr(cardbyte) )
+
+    bwbytes = ''.join( bwbytes )
+    colbytes = ''.join( colbytes )
+
+    bwimg = PIL.Image.frombytes('1', (w,h), bwbytes, decoder_name='raw')
+    
+    # stand in for color image - needs to be bw and not inverted
+    colsource = PIL.Image.frombytes('1', (w,h), colbytes, decoder_name='raw')
+
+    # create color image
+
+    # new image
+    colimg = PIL.Image.new('RGB', (w,h), 0)
+
+    for row in range(cardsh):
+        base = row * cardsw
+        for col in range(cardsw):
+            idx = base + col
+
+            x = col * 8
+            y = row * 8
+            color = colorbands[row][col]
+            bgi = color & 15
+            bg = c64colors[bgi]
+            fgi = (color >> 4) & 15
+            fg = c64colors[fgi]
+
+            draw = PIL.ImageDraw.Draw( colimg )
+            draw.rectangle( (x,y,x+8,y+8), fill=bg)
+
+            bwcard = colsource.crop( (x,y,x+8,y+8) )
+            bwcard.load()
+            card = bwcard.copy()
+            draw.bitmap( (x,y), card, fill=fg)
+    return colimg, bwimg

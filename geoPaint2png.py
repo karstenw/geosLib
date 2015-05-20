@@ -29,6 +29,8 @@ hexdump = c64Data.hexdump
 
 import geoPaint
 geoPaintBand = geoPaint.geoPaintBand
+photoScrap = geoPaint.photoScrap
+
 
 # make a white bands for empty records
 bytes = [ chr(255),chr(255),chr(255) ] * (640*16)
@@ -75,9 +77,39 @@ def convertGeoPaint( infile, gpf, gdh):
     colimg.save(outfilecol)
     bwimg.save(outfilebw)
 
-def convertPhotScrapBook( f, gpf, gdh, dummy):
-    "photo album V2.1"
+def convertPhotoAlbum( f, gpf, gdh):
     
+    outnamebase = gde.fileName
+    folder = gpf.folder
+    print repr(outnamebase)
+
+
+    version = 1
+    if gdh.classNameString == "photo album V2.1":
+        # currently not doable
+        return 
+    chains = gpf.vlir.chains
+    for i,chain in enumerate(chains):
+        if chain == (0,0):
+            break
+        if chain == (0,255):
+            #print "EMPTY BAND!"
+            continue
+        else:
+            col, bw = photoScrap( chain )
+            # pdb.set_trace()
+            if col:
+                suf = str(i+1).rjust(3,'0') + "_col.png"
+                of = os.path.join( folder, outnamebase + suf )
+                col.save( of )
+            if bw:
+                suf = str(i+1).rjust(3,'0') + "_bw.png"
+                of = os.path.join( folder, outnamebase + suf )
+                bw.save( of )
+
+def convertPhotoScrap( f, gpf, gdh):
+    pass
+
 
 if __name__ == '__main__':
     # pdb.set_trace()
@@ -85,6 +117,9 @@ if __name__ == '__main__':
         
         gpf = CBMConvertFile( f )
         gde = gpf.geosDirEntry
+        # currently only vlir files
+        if gde.geosFileStructureString != "VLIR":
+            continue
         gdh = gpf.vlir.header
 
         # print file info
@@ -97,9 +132,9 @@ if __name__ == '__main__':
         if gdh.classNameString.startswith("Paint Image V"):
             convertGeoPaint( f, gpf, gdh)
         elif gdh.classNameString.startswith("photo album V"):
-            pass
+            convertPhotoAlbum( f, gpf, gdh)
         elif gdh.classNameString.startswith("Photo Scrap V"):
-            pass
+            convertPhotoScrap( f, gpf, gdh)
         else:
             print
             print "NOT PROCESSED!"
