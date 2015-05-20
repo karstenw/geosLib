@@ -40,4 +40,4 @@ python geoPaint2png.py testimages/*.cvt
 
 + Text Scrap files
 
-+ stop this trip on memory lane.
++ Clean the mess up and finish this trip on memory lane.
