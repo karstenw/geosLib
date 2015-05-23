@@ -110,7 +110,7 @@ class CBMConvertFile(object):
         format = data[0x1e:0x3a]
 
         geoinfo = data[0xfe:0x1fc]
-        self.geosHeaderBlock = GEOSHeaderBlock(geoinfo)
+        self.geosHeaderBlock = GEOSHeaderBlock(geoinfo, infile)
 
         giwidth = ord( geoinfo[0] ) * 8
         giheight = ord( geoinfo[1] )
@@ -129,10 +129,6 @@ class CBMConvertFile(object):
             print "GEOS file type:", gigeosfiletype
             print "GEOS file structure:", gigeosfilestructure
 
-        geofiletype = ord(data[21])
-    
-        vlirheader = data[0x1fc:0x2fa]
-
         if format.startswith("PRG formatted GEOS file V1.0"):
             broken = False
         elif format.startswith("PRG formatted GEOS file"):
@@ -144,42 +140,53 @@ class CBMConvertFile(object):
         if 0: #kwlog:
             print "<<<%s>>>" % format
 
-        payload = data[0x2FA:]
+        geofiletype = ord(data[21])
 
         chains = [ (0x00, 0xff) ] * 127
-    
-        consumedpayload = 0
 
-        for i in range( 127 ):
-            a1 = ord( vlirheader[i * 2] )
-            a2 = ord( vlirheader[i * 2 + 1] )
-            if 0: #kwlog:
-                print "<<<chain 0x%02x/0x%02x>>>" % ( a1, a2 )
-        
-            # end of file
-            if a1 == 0 and a2 == 0:
-                chains[i] = (a1,a2)
-                break
-        
-            if a1 == 0 and a2 == 255:
-                #chains[i] = (ai,a2)
-                continue
-        
-            if broken:
-                chain_size = a1 * 254 + a2
-                gross_size = chain_size
-            else:
-                chain_size = (a1 - 1) * 254 + a2 -1
-                gross_size = a1 * 254
+        if geofiletype == 0:
+            # sequential file.
+            # out of pure lazyness, store filadata in vlir[0]
+            # why did I make the SEQFile class?
+            chains[0] = data[0x1fc:]
 
-            chainstart = consumedpayload
-            chainend = consumedpayload + gross_size
-            chainlogicalend = consumedpayload + chain_size
-            chaindata = payload[chainstart:chainlogicalend]
-        
-            chains[i] = chaindata
+        elif geofiletype == 1:
+            vlirheader = data[0x1fc:0x2fa]
 
-            consumedpayload = chainend
+            payload = data[0x2FA:]
+
+            consumedpayload = 0
+
+            for i in range( 127 ):
+                a1 = ord( vlirheader[i * 2] )
+                a2 = ord( vlirheader[i * 2 + 1] )
+                if 0: #kwlog:
+                    print "<<<chain 0x%02x/0x%02x>>>" % ( a1, a2 )
+        
+                # end of file
+                if a1 == 0 and a2 == 0:
+                    chains[i] = (a1,a2)
+                    break
+        
+                if a1 == 0 and a2 == 255:
+                    #chains[i] = (ai,a2)
+                    continue
+        
+                if broken:
+                    chain_size = a1 * 254 + a2
+                    gross_size = chain_size
+                else:
+                    chain_size = (a1 - 1) * 254 + a2 -1
+                    gross_size = a1 * 254
+
+                chainstart = consumedpayload
+                chainend = consumedpayload + gross_size
+                chainlogicalend = consumedpayload + chain_size
+                chaindata = payload[chainstart:chainlogicalend]
+        
+                chains[i] = chaindata
+
+                consumedpayload = chainend
         v = VLIRFile()
         v.chains = chains
         v.header = self.geosHeaderBlock
@@ -202,11 +209,12 @@ class SEQFile(object):
 
 
 class GEOSHeaderBlock(object):
-    def __init__(self, s):
+    def __init__(self, s, filepath):
         # skip possible link bytes
         if ord(s[0]) == 0 and len(s) == 256:
             s = s[2:]
         # pdb.set_trace()
+        self.filepath = filepath
         self.iconWidthCards = ord(s[0])
         self.iconWidth = self.iconWidthCards * 8
         self.iconHeight = ord(s[1])
@@ -263,6 +271,10 @@ class GEOSHeaderBlock(object):
         self.desktopNoteString = self.desktopNoteRAW.split( chr(0) )[0]
 
     def prnt(self):
+        print
+        print "GEOS Header Block for:", repr(self.filepath)
+        
+        # print icon
         print '-' * 24
         for y in range(self.iconHeight):
             for x in range(self.iconWidthCards):
@@ -278,6 +290,8 @@ class GEOSHeaderBlock(object):
             sys.stdout.write('\n')
         sys.stdout.flush()
         print '-' * 24
+        
+        # print extended file attributes
         print "GEOS File Structure:", self.geosFileStructureString
         print "GEOS File Type:", repr(self.geosFileTypeString)
 
@@ -347,7 +361,10 @@ class GEOSDirEntry(CBMDirEntry):
             y += 1900
         else:
             y += 2000
-        self.modfDate = datetime.datetime(y,m,d,h,mi)
+        try:
+            self.modfDate = datetime.datetime(y,m,d,h,mi)
+        except Exception, err:
+            self.modfDate = "ERROR WITH:  %i %i %i - %i:%i" % (y,m,d,h,mi)
         
         self.fileSizeBlocks = ord(s[0x1c]) + ord(s[0x1d]) * 256
 
