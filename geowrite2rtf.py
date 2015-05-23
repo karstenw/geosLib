@@ -31,117 +31,11 @@ import PIL.Image
 import PIL.ImageDraw
 
 
-def expandImageStream( s ):
-    n = len(s)
-    j = -1
-    image = []
-    while j < n-1:
-        j += 1
-        code = ord(s[j])
-        
-        if code < 128:
-            data = ord(s[j+1])
-            t = [data] * code
-            image.extend( t )
-            j += 1
-            continue
-        elif 128 <= code <= 219:
-            c = code - 128
-            data = s[j+1:j+c+1]
-            for i in data:
-                image.append( ord(i) )
-            j += c
-            continue
-            
-        else:
-            # 220...255
-            patsize = code -220
-            repeat = ord(s[j+1])
-            size = repeat * patsize
-            pattern = s[j+2:j+2+patsize]
-            for i in range( repeat ):
-                for p in pattern:
-                    image.append( ord(p) )
-            
-            j += patsize + 1
-            continue
-    return image
-
-
-
-def photoScrapXXX( s ):
-    if s in (None, (0,0), (0,255)):
-        return 0,0,0
-
-    cardsw = ord(s[0])
-    w = cardsw * 8
-    h = ord(s[2]) * 256 + ord(s[1])
-    cardsh = h >> 3
-    noofcards = cardsw * cardsh
-    image = []
-    
-    image = expandImageStream(s[3:])
-
-    colorbands = []
-    # extract color data
-    offset = cardsw * h
-    for row in range(cardsh):
-        base = offset + row * cardsw
-        end = base + cardsw
-        band = image[base:end]
-        colorbands.append( band )
-
-    # pdb.set_trace()
-
-    # new image
-    img = PIL.Image.new('1', (w,h), 0)
-    
-    draw = PIL.ImageDraw.Draw( img )
-    # fill background colors
-    if 0:
-        for row in range(cardsh):
-            base = row * cardsw
-            for col in range(cardsw):
-                idx = base + col
-                x = col * 8
-                y = row * 8
-                color = colorbands[row][col]
-                bg = color & 15
-                bg = c64colors[bg]
-                fg = (color >> 4) & 15
-                fg = c64colors[fg]
-                # draw.rectangle( (x,y,x+8,y+8), fill=bg)
-
-                bytes = []
-                for i in range(8):
-                    byteadr = base 
-                    bitmapbyte = image[idx + i * cardsw]
-                    bytes.append( chr(bitmapbyte) )
-                bytes = ''.join(bytes)
-                card = PIL.Image.frombytes('1', (8,8), bytes, decoder_name='raw')
-                img.paste(card, (x,y,x+8,y+8))
-
-    bytes = []
-    for y in range(h):
-        for x in range(cardsw):
-            idx = y * cardsw + x
-            print idx,
-            cardbyte = image[idx]
-            cardbyte = cardbyte ^ 0xff
-            bytes.append( chr(cardbyte) )
-        print
-
-    bytes = ''.join( bytes )
-    img = PIL.Image.frombytes('1', (w,h), bytes, decoder_name='raw')
-    if kwdbg:
-        img.save("test.png")
-        # pdb.set_trace()
-    return (w,h,img)
-
 class ItemCollector(object):
     """Collect the rtf, html and image snippets for second pass assembly.
     """
     def __init__(self):
+        self.textcollection = []
         self.htmlcollection = []
         self.rtfcollection = []
         self.imagecollection = {}
@@ -149,6 +43,8 @@ class ItemCollector(object):
         self.htmlcollection.append(s)
     def addRTF(self, s):
         self.rtfcollection.append(s)
+    def addTEXT(self, s):
+        self.textcollection.append(s)
     def addImage(self, name, w, h, img):
         self.imagecollection[name] = (w,h,img)
     
@@ -310,11 +206,13 @@ def main():
 
             elif nc == 12:
                 if FF_TO_LF:
-                    ic.addRTF( "\n\n ## PAGE BREAK ##\n\n" )
+                    ic.addRTF( "\n\n" )
                     ic.addHTML( "<br/><br/>\n" )
+                    ic.addTEXT( "\n\n" )
                     continue
                 else:
                     ic.addRTF( "\\page " )
+                    ic.addTEXT( c )
                     ic.addHTML( "<hr/>\n" )
                     log.append("LF")
                     continue
@@ -322,6 +220,7 @@ def main():
             elif nc == 13:
                 ic.addRTF( "\\\n" )
                 ic.addHTML( "<br/>\n" )
+                ic.addTEXT( "\n" )
                 log.append("RET")
                 continue;
 
@@ -338,7 +237,7 @@ def main():
                 if  63 <= chainindex <= 127:
                     # pdb.set_trace()
                     # width, height, image = photoScrap( chains[chainindex] )
-                    colimg, bwimg = photoScrapV10( chains[chainindex] )
+                    colimg, bwimg = photoScrap( chains[chainindex] )
                     image = colimg
                     if not (width and height and image):
                         j += 4
@@ -348,6 +247,7 @@ def main():
                     rtfs = "{{\\NeXTGraphic %s \\width%i \\height%i} " + chr(0xac) + "}"
                     ic.addRTF( rtfs % (imagename, width, height) )
                     ic.addHTML( '<img src="%s" />' % (imagename,) )
+                    ic.addTEXT( "\n\nIMAGEFILE(%i, %i, %s)\n\n" % (width, height, imagename) )
                     ic.addImage( imagename, width, height, image )
 
                 else:
@@ -464,8 +364,9 @@ def main():
                         ('\\ulnone ', '\\ul '))
 
                     rtfstyles = dict(zip(bits, rtfcommands))
-                    print "oldstyle", bin(style)
-                    print "newstyle", bin(newstyle)
+                    if kwdbg:
+                        print "oldstyle", bin(style)
+                        print "newstyle", bin(newstyle)
                     # pdb.set_trace()
 
                     for bit in bits:
@@ -502,11 +403,13 @@ def main():
             elif c in ('{','}'):
                 ic.addRTF( "\\%s" % c )
                 ic.addHTML( c )
+                ic.addTEXT( c )
                 log.append("{}")
                 continue
 
             ic.addRTF( c )
             ic.addHTML( c )
+            ic.addTEXT( c )
             if log:
                 if log[-1] != "CHARS":
                     log.append("CHARS")
@@ -521,6 +424,7 @@ def main():
     # pdb.set_trace()
     rtfs = ''.join( ic.rtfcollection )
     htmls = ''.join( ic.htmlcollection )
+    texts = ''.join( ic.textcollection )
     
     rtfoutfolder = os.path.join( folder, basename + ".rtfd" )
     if not os.path.exists( rtfoutfolder ):
@@ -529,7 +433,6 @@ def main():
     f = open(rtfoutfile, 'wb')
     f.write( rtfs )
     f.close()
-    
 
     htmloutfolder = os.path.join( folder, basename + "_html" )
     if not os.path.exists( htmloutfolder ):
@@ -537,6 +440,11 @@ def main():
     htmloutfile = os.path.join( htmloutfolder, "index.html")
     f = open(htmloutfile, 'wb')
     f.write( htmls )
+    f.close()
+
+    textoutfile = os.path.join(folder, basename + ".txt")
+    f = open(textoutfile, 'wb')
+    f.write( texts )
     f.close()
 
     # write images
