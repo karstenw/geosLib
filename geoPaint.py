@@ -79,10 +79,17 @@ def expandScrapStream( s ):
     while j < n-1:
         j += 1
         code = ord(s[j])
-        
+        roomleft = (n-1) - j
         if code in (0,128,220):
+            if kwdbg:
+                print "ILLEGAL OPCODES..."
+                pdb.set_trace()
+                print
             continue
         elif code < 128:
+            if roomleft < 1:
+                j += 1
+                continue
             data = ord(s[j+1])
             t = [data] * code
             image.extend( t )
@@ -90,6 +97,9 @@ def expandScrapStream( s ):
             continue
         elif 128 <= code <= 219:
             c = code - 128
+            if roomleft < c:
+                j += c
+                continue
             data = s[j+1:j+c+1]
             for i in data:
                 image.append( ord(i) )
@@ -99,6 +109,9 @@ def expandScrapStream( s ):
         else:
             # 220...255
             patsize = code -220
+            if roomleft < patsize+1:
+                j += patsize+1
+                continue
             repeat = ord(s[j+1])
             size = repeat * patsize
             pattern = s[j+2:j+2+patsize]
@@ -106,7 +119,7 @@ def expandScrapStream( s ):
                 for p in pattern:
                     image.append( ord(p) )
             
-            j += patsize + 1
+            j += patsize+1
             continue
     return image
 
