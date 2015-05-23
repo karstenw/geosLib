@@ -174,26 +174,58 @@ def geoPaintBand( s, version ):
             col.save("lastband_col.png")
             bw.save("lastband_bw.png")
         return col, bw
-    return False
+    return False, False
 
 def imageband2PNG( image, cardsw, cardsh, version):
     w = cardsw * 8
     h = cardsh * 8
+
     noofcards = cardsw * cardsh
+    noofbytes = noofcards * 8
+    
+    noofcolorbands = cardsh
+    
+    # holds a list of card colors; one list per row
     colorbands = []
     
+    # pdb.set_trace()
+
     # check sizes
     n = len(image)
-    expectedSize = cardsw * h + noofcards + 8
-    if n != expectedSize:
+    bitmapsize = cardsw * h
+    colormapsize = noofcards
+    gap = 8
+    expectedSize = bitmapsize + gap + colormapsize
+    
+    if n < bitmapsize:
+        # actual bits missing
+        # fill with 0
+        # one colored image
+        if kwdbg:
+            pdb.set_trace()
+            print "BITMAP BITS MISSING", bitmapsize - n
+
+    elif n == bitmapsize:
+        # one colored image
+        if kwdbg:
+            print "ONLY BITMAP BITS"
+    elif n == bitmapsize + colormapsize:
+        # colored image not created by geoPaint (I guess)
+        if kwdbg:
+            pdb.set_trace()
+            print "COLOR GAP MISSING"
+    elif n == expectedSize:
+        # should be all ok and parts sitting where they're expected to be
+        pass
+
+    if 0: #n != expectedSize:
         # pdb.set_trace()
         print 
         print "SIZE MISMATCH!"
         print n
         print expectedSize
         print 
-        
-    
+
     # extract color data
     offset = cardsw * h + 8
     for row in range(cardsh):
@@ -201,10 +233,11 @@ def imageband2PNG( image, cardsw, cardsh, version):
         end = base + cardsw
         band = image[base:end]
         if len(band) < cardsw:
-            band.extend( [1] * (cardsw -len(band)) )
+            print "color band extend", (cardsw -len(band))
+            band.extend( [191] * (cardsw -len(band)) )
         colorbands.append( band )
 
-    bytes = [ chr(0) ] * 1280
+    bytes = [ chr(0) ] * noofbytes
 
     ROWS = cardsh
     COLS = cardsw
@@ -220,10 +253,18 @@ def imageband2PNG( image, cardsw, cardsh, version):
                 # 0-15 
                 base = row * BYTESPERCARD 
                 dst = base * 80 + byte * 80 + col
+                # dst = base * cardsw + byte * cardsw + col
                 try:
                     byte = image[idx]
                 except IndexError:
                     byte = 0
+
+                if dst >= noofbytes:
+                    pdb.set_trace()
+                    print row
+                    print col
+                    print byte
+                    print row * BYTESPERCARD 
                 bytes[dst] = byte
 
     # separate 
@@ -232,21 +273,22 @@ def imageband2PNG( image, cardsw, cardsh, version):
     # invert bw bytes. looks better most of the cases
     bwbytes = [chr(i ^ 255) for i in bytes]
 
+    # for the bitmap image
     bwbytes = ''.join( bwbytes )
     bwimg = PIL.Image.frombytes('1', (w,h), bwbytes, decoder_name='raw')
 
+    # a bw source for the color image; cards get copied in bw mode
     colbytes = ''.join(colbytes)
     colsource = PIL.Image.frombytes('1', (w,h), colbytes, decoder_name='raw')
 
     # new image
     colimg = PIL.Image.new('RGB', (w,h), (1,1,1))
+
     for row in range(cardsh):
         base = row * cardsw
         for col in range(cardsw):
             idx = base + col
 
-            x = col * 8
-            y = row * 8
             color = colorbands[row][col]
             bgi = color & 15
             bg = c64colors[bgi]
@@ -254,22 +296,32 @@ def imageband2PNG( image, cardsw, cardsh, version):
             fg = c64colors[fgi]
 
             draw = PIL.ImageDraw.Draw( colimg )
+
+            # get coordinates for copy/paste
+            x = col * 8
+            y = row * 8
+
+            # fill the card with background color
             draw.rectangle( (x,y,x+8,y+8), fill=bg)
 
+            # copy the bitmap data
             bwcard = colsource.crop( (x,y,x+8,y+8) )
             bwcard.load()
-            draw.bitmap( (x,y), bwcard, fill=fg)
-        return colimg, bwimg
+            card = bwcard.copy()
+
+            # paste the bw bitmap into a color imaga, coloring the card
+            draw.bitmap( (x,y), card, fill=fg)
 
     return (colimg, bwimg)
-    # return bwimg
 
 
 
-
-def photoScrap( s ):
+def photoScrapV11( s ):
     if s == None:
         return
+
+    pdb.set_trace()
+
     cardsw = ord(s[0])
     w = cardsw * 8
     h = ord(s[2]) * 256 + ord(s[1])
@@ -283,11 +335,14 @@ def photoScrap( s ):
 
     colorbands = []
     # extract color data
-    offset = cardsw * h
+    offset = cardsw * h + 8
     for row in range(cardsh):
         base = offset + row * cardsw
         end = base + cardsw
         band = image[base:end]
+        if len(band) < cardsw:
+            band.extend( [191] * (cardsw -len(band)) )
+            print "color band extend", (cardsw -len(band))
         colorbands.append( band )
 
     # create bw image
@@ -335,3 +390,78 @@ def photoScrap( s ):
             card = bwcard.copy()
             draw.bitmap( (x,y), card, fill=fg)
     return colimg, bwimg
+
+
+def photoScrapV10( s ):
+    if s == None:
+        return
+
+    cardsw = ord(s[0])
+    w = cardsw * 8
+    h = ord(s[2]) * 256 + ord(s[1])
+    cardsh = h >> 3
+    noofcards = cardsw * cardsh
+    image = []
+    
+    image = expandScrapStream(s[3:])
+
+    # pdb.set_trace()
+
+    colorbands = []
+    # extract color data
+    offset = cardsw * h
+    for row in range(cardsh):
+        base = offset + row * cardsw
+        end = base + cardsw
+        band = image[base:end]
+        if len(band) < cardsw:
+            band.extend( [191] * (cardsw -len(band)) )
+            print "color band extend", (cardsw -len(band))
+        colorbands.append( band )
+
+    # create bw image
+    bwbytes = []
+    colbytes = []
+    for y in range(h):
+        for x in range(cardsw):
+            idx = y * cardsw + x
+            cardbyte = image[idx]
+            colbytes.append( chr(cardbyte) )
+            cardbyte = cardbyte ^ 0xff
+            bwbytes.append( chr(cardbyte) )
+
+    bwbytes = ''.join( bwbytes )
+    colbytes = ''.join( colbytes )
+
+    bwimg = PIL.Image.frombytes('1', (w,h), bwbytes, decoder_name='raw')
+    
+    # stand in for color image - needs to be bw and not inverted
+    colsource = PIL.Image.frombytes('1', (w,h), colbytes, decoder_name='raw')
+
+    # create color image
+
+    # new image
+    colimg = PIL.Image.new('RGB', (w,h), 0)
+
+    for row in range(cardsh):
+        base = row * cardsw
+        for col in range(cardsw):
+            idx = base + col
+
+            x = col * 8
+            y = row * 8
+            color = colorbands[row][col]
+            bgi = color & 15
+            bg = c64colors[bgi]
+            fgi = (color >> 4) & 15
+            fg = c64colors[fgi]
+
+            draw = PIL.ImageDraw.Draw( colimg )
+            draw.rectangle( (x,y,x+8,y+8), fill=bg)
+
+            bwcard = colsource.crop( (x,y,x+8,y+8) )
+            bwcard.load()
+            card = bwcard.copy()
+            draw.bitmap( (x,y), card, fill=fg)
+    return colimg, bwimg
+
