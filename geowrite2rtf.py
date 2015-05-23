@@ -8,8 +8,8 @@ import os
 import struct
 
 import pdb
-kwdbg = True
-kwlog = True
+kwdbg = 0
+kwlog = 0
 
 import pprint
 pp = pprint.pprint
@@ -20,6 +20,8 @@ c64colors = c64Data.c64colors
 GEOSDirEntry = c64Data.GEOSDirEntry
 GEOSHeaderBlock = c64Data.GEOSHeaderBlock
 
+import geoPaint
+photoScrapV10 = geoPaint.photoScrapV10
 
 SUPPRESS_NUL = False
 FF_TO_LF = False
@@ -68,8 +70,9 @@ def expandImageStream( s ):
 
 
 def photoScrap( s ):
-    if s == None:
-        return
+    if s in (None, (0,0), (0,255)):
+        return 0,0,0
+
     cardsw = ord(s[0])
     w = cardsw * 8
     h = ord(s[2]) * 256 + ord(s[1])
@@ -131,14 +134,30 @@ def photoScrap( s ):
     bytes = ''.join( bytes )
     img = PIL.Image.frombytes('1', (w,h), bytes, decoder_name='raw')
     img.save("test.png")
-    pdb.set_trace()
-    return (w,h,image)
+    # pdb.set_trace()
+    return (w,h,img)
+
+class ItemCollector(object):
+    """Collect the rtf, html and image snippets for second pass assembly.
+    """
+    def __init__(self):
+        self.htmlcollection = []
+        self.rtfcollection = []
+        self.imagecollection = {}
+    def addHTML(self, s):
+        self.htmlcollection.append(s)
+    def addRTF(self, s):
+        self.rtfcollection.append(s)
+    def addImage(self, name, w, h, img):
+        self.imagecollection[name] = (w,h,img)
+    
+
 
 
 def main():
     argc = len(sys.argv)
     
-    if argc < 3:
+    if 0: #argc < 3:
         print "Usage: %s <infile> <outfile.rtf|outfile.html|outfile.txt>" % sys.argv[0]
         print "\nThis tool converts a C64/C128 GEOS GeoWrite .CVT file into an RTF, HTML,"
         print "or plain-text file, depending on the file extension of <outfile>."
@@ -149,27 +168,22 @@ def main():
 
     infile = sys.argv[1]
     infile = os.path.abspath(os.path.expanduser(infile))
-
-    outfile = sys.argv[2]
-    outfile = os.path.expanduser(os.path.abspath(outfile))
     
-    folder, filename = os.path.split( outfile )
+
+    #outfile = sys.argv[2]
+    #outfile = os.path.expanduser(os.path.abspath(outfile))
+    
+    folder, filename = os.path.split( infile )
     basename, ext = os.path.splitext( filename )
 
-    print_html = False
-    print_rtf = False
+    print_html = 1
+    print_rtf = 1
     
-    if ext.lower() in (".rtf", ".rtfd"):
-        print_rtf = True
-    
-    if ext.lower() in (".htm", ".html"):
-        print_html = True
-
     f = open(infile, 'rb')
     data = f.read()
     f.close()
 
-    f = open(outfile, 'w')
+    ic = ItemCollector()
 
     direntry = data[0:0x1e]
 
@@ -180,8 +194,7 @@ def main():
     format = data[0x1e:0x3a]
 
     geoinfo = data[0xfe:0x1fc]
-    pdb.set_trace()    
-    gib = GEOSHeaderBlock(geoinfo)
+    gib = GEOSHeaderBlock(geoinfo, infile)
     gib.prnt()
     
     giwidth = ord( geoinfo[0] ) * 8
@@ -218,8 +231,7 @@ def main():
 
     payload = data[0x2FA:]
 
-    if print_rtf:
-        f.write("{\\rtf1 ")
+    ic.addRTF( "{\\rtf1 " )
 
     chains = [ None ] * 127
     
@@ -297,24 +309,18 @@ def main():
 
             elif nc == 12:
                 if FF_TO_LF:
-                    f.write("\n")
-                    
+                    ic.addRTF( "\n\n ## PAGE BREAK ##\n\n" )
+                    ic.addHTML( "<br/><br/>\n" )
                     continue
                 else:
-                    if print_html:
-                        f.write("<hr/>\n")
-                    else:
-                        f.write("\\page ")
+                    ic.addRTF( "\\page " )
+                    ic.addHTML( "<hr/>\n" )
                     log.append("LF")
                     continue
 
             elif nc == 13:
-                if print_html:
-                    f.write("<br/>\n")
-                elif print_rtf:
-                    f.write("\\\n")
-                else:
-                    f.write("\n")
+                ic.addRTF( "\\\n" )
+                ic.addHTML( "<br/>\n" )
                 log.append("RET")
                 continue;
 
@@ -326,19 +332,32 @@ def main():
                 heightH = ord(chain[j+3])
                 height = heightH * 256 + heightL
                 chainindex = ord(chain[j+4])
-                if kwlog:
-                    print "+++ TODO +++   <<<Graphics Escape>>> %i:%i @ VLIR:%i" % (width, height, chainindex)
-                if print_rtf and False:
-                    f.write("{{\\NeXTGraphic attachment \\width%d \\height%d} ¬}" % (width * 20, height * 20))
 
                 # pdb.set_trace()
                 if  63 <= chainindex <= 127:
-                    i = photoScrap( chains[chainindex] )
+                    # pdb.set_trace()
+                    # width, height, image = photoScrap( chains[chainindex] )
+                    colimg, bwimg = photoScrapV10( chains[chainindex] )
+                    image = colimg
+                    if not (width and height and image):
+                        j += 4
+                        continue
+                    imagename = str(chainindex).rjust(5, '0') + ".png"
+                    # image.save(imagename)
+                    rtfs = "{{\\NeXTGraphic %s \\width%i \\height%i} " + chr(0xac) + "}"
+                    ic.addRTF( rtfs % (imagename, width, height) )
+                    ic.addHTML( '<img src="%s" />' % (imagename,) )
+                    ic.addImage( imagename, width, height, image )
+
                 else:
                     pdb.set_trace()
                     print "INDEX ERROR"
+
+                if kwlog:
+                    print "<<<Graphics Escape>>> %i:%i @ VLIR:%i" % (width, height, chainindex)
+
                 j += 4
-                log.append("GRPHX %i" % chainindex)
+                log.append("GRPHX vlir:%i, w: %i, h: %i" % (chainindex,width,height) )
                 continue
 
             elif nc == 17:
@@ -373,21 +392,16 @@ def main():
                     1:  'center',
                     2:  'right',
                     3:  'justify'}
-                
-                if print_rtf:
-                    if spacing == 0:
-                        f.write("\\sl240 ")
-                    elif spacing == 1:
-                        f.write("\\sl360 ")
-                    elif spacing == 2:
-                        f.write("\\sl480 ")
-                
-                    f.write("\\q%s " % (justifications[justifiation],))
+                spacings = {
+                    0: "\\sl240 ",
+                    1: "\\sl360 ",
+                    2: "\\sl480 "}
 
-                if print_html:
-                    #no line spacing ?!?
-                    f.write('<span align="%s">' % (justifications[justifiation],))
-                
+                ic.addRTF( spacings.get(spacing, "") )
+                ic.addRTF( "\\q%s " % (justifications[justifiation],) )
+
+                ic.addHTML( '<span align="%s">' % (justifications[justifiation],) )
+
                 if kwlog:
                     print "leftmargin:", repr(leftMargin)
                     print "rightMargin:", repr(rightMargin)
@@ -395,8 +409,16 @@ def main():
                     print "justifiation:", repr(justifiation)
                     print "spacing:", repr(spacing)
                     print "color:", repr(color)
-                    print "tabs:"
-                    pp(tabs)
+                    print "tabs:", tabs
+                
+                for tab in tabs:
+                    tabpoint, decimal = tab
+                    if tabpoint >= rightMargin:
+                        continue
+                    if decimal:
+                        ic.addRTF( "\\tqdec" )
+                    ic.addRTF( "\\tx%i" % (tabpoint * 20) )
+
                 j += 26
                 log.append("RULER")
                 continue
@@ -421,11 +443,8 @@ def main():
                     font_id = fontid
 
                 if fontsize != font_size:
-                    if print_html:
-                        f.write('<span style="font-size: %ipt">'  % fontsize)
-                    elif print_rtf:
-                        
-                        f.write("\\fs%i " % (fontsize * 2,))
+                    ic.addHTML( '<span style="font-size: %ipt">'  % fontsize )
+                    ic.addRTF( "\\fs%i " % (fontsize * 2,) )
                     font_size = fontsize
 
                 if style != newstyle:
@@ -438,7 +457,8 @@ def main():
                         ('\\nosupersub ', '\\super '),
                         ('\\outl0\\strokewidth0 ', '\\outl\\strokewidth60 '),
                         ('\\i0 ', '\\i '),
-                        ('{\\colortbl;\\red0\\green0\\blue0;\\red255\\green255\\blue255;}\\cb1\\cf2 ', '{\\colortbl;\\red0\\green0\\blue0;\\red255\\green255\\blue255;}\\cb2\\cf1 '),
+                        ('{\\colortbl;\\red0\\green0\\blue0;\\red255\\green255\\blue255;}\\cb1\\cf2 ',
+                         '{\\colortbl;\\red0\\green0\\blue0;\\red255\\green255\\blue255;}\\cb2\\cf1 '),
                         ('\\b0 ', '\\b '),
                         ('\\ulnone ', '\\ul '))
 
@@ -459,12 +479,10 @@ def main():
                             pass
                         elif     curr and not old:
                             # switch on
-                            if print_rtf:
-                                f.write(rtfstyles[bit][1])
+                            ic.addRTF( rtfstyles[bit][1] )
                         elif not curr and     old:
                             # switch off
-                            if print_rtf:
-                                f.write(rtfstyles[bit][0])
+                            ic.addRTF( rtfstyles[bit][0] )
                     style = newstyle
                 log.append("NEWCARDSET")
                 j += 3
@@ -473,7 +491,7 @@ def main():
                 j += 19
                 bytes = [hex(ord(i)) for i in chain[j:j+10]]
                 pp(bytes)
-                pdb.set_trace()
+                # pdb.set_trace()
                 log.append("0x08 | 0x24")
                 continue
             elif nc == 0xf5:
@@ -481,23 +499,54 @@ def main():
                 log.append("0xF5")
                 continue
             elif c in ('{','}'):
-                if print_rtf:
-                    f.write("\\%s" % c)
-                if print_html:
-                    f.write( c )
+                ic.addRTF( "\\%s" % c )
+                ic.addHTML( c )
                 log.append("{}")
                 continue
-            
-            f.write(c)
+
+            ic.addRTF( c )
+            ic.addHTML( c )
             if log:
                 if log[-1] != "CHARS":
                     log.append("CHARS")
 
         if kwlog:
             print "<<<New Page>>>"
-        if print_rtf:
-            f.write("}")
+
+    ic.addRTF( "}" )
+    # f.close()
+    # write out files
+
+    # pdb.set_trace()
+    rtfs = ''.join( ic.rtfcollection )
+    htmls = ''.join( ic.htmlcollection )
+    
+    rtfoutfolder = os.path.join( folder, basename + ".rtfd" )
+    if not os.path.exists( rtfoutfolder ):
+        os.makedirs( rtfoutfolder )
+    rtfoutfile = os.path.join( rtfoutfolder, "TXT.rtf")
+    f = open(rtfoutfile, 'wb')
+    f.write( rtfs )
     f.close()
+    
+
+    htmloutfolder = os.path.join( folder, basename + "_html" )
+    if not os.path.exists( htmloutfolder ):
+        os.makedirs( htmloutfolder )
+    htmloutfile = os.path.join( htmloutfolder, "index.html")
+    f = open(htmloutfile, 'wb')
+    f.write( htmls )
+    f.close()
+
+    # write images
+    
+    for filename in ic.imagecollection:
+        w,h,img = ic.imagecollection[filename]
+        
+        rtfimage = os.path.join( rtfoutfolder, filename )
+        htmlimage = os.path.join( htmloutfolder, filename )
+        img.save( rtfimage )
+        img.save( htmlimage )
 
 if __name__ == '__main__':
     main()
