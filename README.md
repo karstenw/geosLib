@@ -18,23 +18,27 @@ The speed is now acceptable. It has been at 1.5s for 1 document. Now it converts
 
 + The essential bug that made me output bw and color versions has been found: the entry for white in the color look up table was wrong. White was nearly black...
 
-+ Photo Album V1 files are now converted too. Each entry is written as a file. Photo Album V2 files are not read. They crash and I can't find any documentation.
++ Photo Album V1 files are now converted too. Each entry is written as a file.
+
++ The geowrite2rtf script now works too. Including images. Output is a OSX RTFD folder and a HTML folder.
+
++ Photo Album V2.1 works now. Scrap name gets copied into outfilename.
 
 # Requisites
 + [pillow](https://github.com/python-pillow/Pillow)
 
 # Usage:
 ```
-python geoPaint2png.py testimages/*.cvt
+
+# for geoPaint, Photo Album & Photo Scrap files
+python geoPaint2png.py *.cvt
+
+# for a geoWrite file
+python geowrite2rtf.py CVTFile
+
 ```
 
 # To do:
-
-+ Finish the geoWrite converter. After all this is where it started.
-
-+ Photo Album V2 files
-
-+ Photo Scrap files
 
 + Text Album files
 
@@ -43,7 +47,7 @@ python geoPaint2png.py testimages/*.cvt
 + Clean the mess up and finish this trip on memory lane.
 
 
-# Some old images:
+# Some (cropped) old images:
 ![Woodblock](./images/Woodblock.png?raw=true)
 ![Lobster](./images/Lobster.png?raw=true)
 ![Shuttlelaunch](./images/Shuttlelaunch_col.png?raw=true)

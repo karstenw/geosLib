@@ -7,7 +7,7 @@ import os
 import datetime
 
 import pdb
-kwlog = 1
+kwlog = 0
 
 fontmapping = {
     0: ('BSW', ''),

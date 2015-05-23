@@ -21,7 +21,7 @@ GEOSDirEntry = c64Data.GEOSDirEntry
 GEOSHeaderBlock = c64Data.GEOSHeaderBlock
 
 import geoPaint
-photoScrapV10 = geoPaint.photoScrapV10
+photoScrap = geoPaint.photoScrap
 
 SUPPRESS_NUL = False
 FF_TO_LF = False
@@ -69,7 +69,7 @@ def expandImageStream( s ):
 
 
 
-def photoScrap( s ):
+def photoScrapXXX( s ):
     if s in (None, (0,0), (0,255)):
         return 0,0,0
 
@@ -133,8 +133,9 @@ def photoScrap( s ):
 
     bytes = ''.join( bytes )
     img = PIL.Image.frombytes('1', (w,h), bytes, decoder_name='raw')
-    img.save("test.png")
-    # pdb.set_trace()
+    if kwdbg:
+        img.save("test.png")
+        # pdb.set_trace()
     return (w,h,img)
 
 class ItemCollector(object):

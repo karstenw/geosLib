@@ -12,8 +12,8 @@ import PIL.Image
 import PIL.ImageDraw
 
 import pdb
-kwdbg = False
-kwlog = False
+kwdbg = 0
+kwlog = 0
 
 import pprint
 pp = pprint.pprint
@@ -30,8 +30,6 @@ hexdump = c64Data.hexdump
 import geoPaint
 geoPaintBand = geoPaint.geoPaintBand
 photoScrap = geoPaint.photoScrap
-photoScrapV10 = geoPaint.photoScrapV10
-photoScrapV11 = geoPaint.photoScrapV11
 
 # it seems the "official" geoColorChoice is fg: color0, bg: color15
 
@@ -50,7 +48,7 @@ bwdummy = PIL.Image.frombytes('1', (640,16), bytes, decoder_name='raw')
 
 
 
-def convertGeoPaint( infile, gpf, gdh):
+def convertGeoPaintFile( infile, gpf, gdh):
     outnamebase = gde.fileName
     outnamebase = outnamebase.replace(":", "_")
     outnamebase = outnamebase.replace("/", "_")
@@ -86,7 +84,7 @@ def convertGeoPaint( infile, gpf, gdh):
     colimg.save(outfilecol)
     bwimg.save(outfilebw)
 
-def convertPhotoAlbum( f, gpf, gdh):
+def convertPhotoAlbumFile( f, gpf, gdh):
     
     outnamebase = gde.fileName
     outnamebase = outnamebase.replace(":", "_")
@@ -95,39 +93,55 @@ def convertPhotoAlbum( f, gpf, gdh):
     print repr(outnamebase)
 
 
-    version = 1
-    if gdh.classNameString == "photo album V2.1":
-        # currently not doable
-        version = 2
-        return 
     chains = gpf.vlir.chains
+    
+    # extract clip names for Photo Album V2.1
+    clipnames = [ "" ] * 127
+    clipnameschain = 256
+    if gdh.classNameString == "photo album V2.1":
+        # scan for last chain
+        if (0,0) in chains:
+            clipnameschain = chains.index( (0,0) ) - 1
+            clipnamesstream = chains[clipnameschain]
+            noofentries = ord(clipnamesstream[0])
+            for i in range(noofentries):
+                base = 1 + i*17
+                namebytes = clipnamesstream[base:base+16]
+                namebytes = namebytes.replace( chr(0x00), "" )
+                namebytes = namebytes.replace( '/', "-" )
+                namebytes = namebytes.replace( ':', "_" )
+                clipnames[i] = namebytes
+    
     for i,chain in enumerate(chains):
-        if chain == (0,0):
-            break
-        if chain == (0,255):
-            #print "EMPTY BAND!"
+        if chain in ((0,0), (0,255), None, False):
             continue
+        if i == clipnameschain:
+            # names record
+            continue
+
+        col, bw = photoScrap( chain )
+        
+        clipname = ""
+        if clipnames[i]:
+            clipname = '-"' + clipnames[i] + '"'
+        if col:
+            suf = '-' + str(i+1).rjust(3,'0') + clipname + "_col.png"
+            of = os.path.join( folder, outnamebase + suf )
+            col.save( of )
         else:
-            #col, bw = photoScrap( chain )
+            print "No color image for vlir: %i" % i
+        if bw:
+            suf = '-' + str(i+1).rjust(3,'0') + clipname + "_bw.png"
+            of = os.path.join( folder, outnamebase + suf )
+            bw.save( of )
+        else:
+            print "No bw image for vlir: %i" % i
+            
 
-            if gdh.classNameString == "photo album V1.1":
-                col, bw = photoScrapV11( chain )
-            elif gdh.classNameString == "photo album V1.0":
-                col, bw = photoScrapV10( chain )
 
-
-            # pdb.set_trace()
-            if col:
-                suf = str(i+1).rjust(3,'0') + "_col.png"
-                of = os.path.join( folder, outnamebase + suf )
-                col.save( of )
-            if bw:
-                suf = str(i+1).rjust(3,'0') + "_bw.png"
-                of = os.path.join( folder, outnamebase + suf )
-                bw.save( of )
-
-def convertPhotoScrap( f, gpf, gdh):
-    print "convertPhotoScrap( f, gpf, gdh)"
+def convertPhotoScrapFile( f, gpf, gdh):
+    if kwlog:
+        print "convertPhotoScrapFile( f, gpf, gdh)"
     
     outnamebase = gde.fileName
     outnamebase = outnamebase.replace(":", "_")
@@ -135,11 +149,6 @@ def convertPhotoScrap( f, gpf, gdh):
     folder = gpf.folder
     print repr(outnamebase)
 
-    version = 1
-    if gdh.classNameString == "photo album V2.1":
-        # currently not doable
-        version = 2
-        return 
     chains = gpf.vlir.chains
     for i,chain in enumerate(chains):
         if chain == (0,0):
@@ -147,17 +156,14 @@ def convertPhotoScrap( f, gpf, gdh):
         if chain == (0,255):
             continue
 
-        if gdh.classNameString == "photo album V1.1":
-            col, bw = photoScrapV11( chain )
-        elif gdh.classNameString == "photo album V1.0":
-            col, bw = photoScrapV10( chain )
+        col, bw = photoScrap( chain )
 
         if col:
-            suf = str(i+1).rjust(3,'0') + "_col.png"
+            suf = '-' + str(i+1).rjust(3,'0') + "_col.png"
             of = os.path.join( folder, outnamebase + suf )
             col.save( of )
         if bw:
-            suf = str(i+1).rjust(3,'0') + "_bw.png"
+            suf = '-' + str(i+1).rjust(3,'0') + "_bw.png"
             of = os.path.join( folder, outnamebase + suf )
             bw.save( of )
 
@@ -166,16 +172,28 @@ if __name__ == '__main__':
     # pdb.set_trace()
     for f in sys.argv[1:]:
         
+        f = os.path.abspath(os.path.expanduser(f))
+        folder, filename = os.path.split( f )
+        
         gpf = CBMConvertFile( f )
         gde = gpf.geosDirEntry
 
+        if kwdbg and 0:
+            for i,c in enumerate(gpf.vlir.chains):
+                if c == (0,0):
+                    break
+                if c == (0,255):
+                    continue
+                cnum = '-' + str(i).rjust(3, '0')
+                outpath = os.path.join(folder, filename + cnum)
+                out = open(outpath, 'wb')
+                out.write( c )
+                out.close()
+
+
         # currently only vlir files
         if gde.geosFileStructureString != "VLIR":
-            if gde.geosFileStructureString != "Sequential":
-                print 
-                print "IGNORED:", repr(f)
-                continue
-            elif not gpf.vlir.header.classNameString.startswith("Photo Scrap V"):
+            if not gpf.vlir.header.classNameString.startswith("Photo Scrap V"):
                 # sequential files only for PHOTO SCRAP
                 print 
                 print "IGNORED:", repr(f)
@@ -193,22 +211,19 @@ if __name__ == '__main__':
         if gdh.classNameString.startswith("Paint Image V"):
             gdh.prnt()
             print '-' * 80
-            convertGeoPaint( f, gpf, gdh)
-        elif gdh.classNameString.startswith("photo album V1"):
+            convertGeoPaintFile( f, gpf, gdh)
+        elif gdh.classNameString.startswith("photo album V"):
             # pdb.set_trace()
             gdh.prnt()
             print '-' * 80
-            convertPhotoAlbum( f, gpf, gdh)
+            convertPhotoAlbumFile( f, gpf, gdh)
         elif gdh.classNameString.startswith("Photo Scrap V"):
             gdh.prnt()
             print '-' * 80
-            convertPhotoScrap( f, gpf, gdh)
+            convertPhotoScrapFile( f, gpf, gdh)
         else:
             print
             print "NOT PROCESSED:", repr(f)
             print "Class:", repr(gdh.classNameString)
             print '#' * 80
             print
-        if kwlog:
-            pdb.set_trace()
-
