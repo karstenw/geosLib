@@ -43,7 +43,7 @@ python geoPaint2png.py testimages/*.cvt
 + Clean the mess up and finish this trip on memory lane.
 
 
-# Some (cropped) classics:
+# Some old images:
 ![Woodblock](./images/Woodblock.png?raw=true)
 ![Lobster](./images/Lobster.png?raw=true)
 ![Shuttlelaunch](./images/Shuttlelaunch_col.png?raw=true)
