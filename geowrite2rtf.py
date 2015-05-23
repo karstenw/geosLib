@@ -62,6 +62,23 @@ def main():
         
         gpf = CBMConvertFile( infile )
         gde = gpf.geosDirEntry
+        gdh = gpf.vlir.header
+        print gdh.classNameString
+        if gdh.classNameString not in (
+                    "Write Image V1.0",
+                    "Write Image V1.1",
+                    "Write Image V2.0",
+                    "Write Image V2.1",
+                    "text album  V1.0",
+                    "text album  V1.1",
+                    "text album  V2.0",
+                    "text album  V2.1",
+                    "Text  Scrap V1.0",
+                    "Text  Scrap V1.1",
+                    "Text  Scrap V2.0",
+                    "Text  Scrap V2.1"):
+            print "IGNORED:", repr( infile )
+            continue
 
 
         print_html = 1
