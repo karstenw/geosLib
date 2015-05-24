@@ -21,8 +21,8 @@ GEOSDirEntry = c64Data.GEOSDirEntry
 GEOSHeaderBlock = c64Data.GEOSHeaderBlock
 CBMConvertFile = c64Data.CBMConvertFile
 
-import geoPaint
-photoScrap = geoPaint.photoScrap
+import geosData
+photoScrap = geosData.photoScrap
 
 SUPPRESS_NUL = False
 FF_TO_LF = False

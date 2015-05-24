@@ -27,9 +27,9 @@ VLIRFile = c64Data.VLIRFile
 CBMConvertFile = c64Data.CBMConvertFile
 hexdump = c64Data.hexdump
 
-import geoPaint
-geoPaintBand = geoPaint.geoPaintBand
-photoScrap = geoPaint.photoScrap
+import geosData
+geoPaintBand = geosData.geoPaintBand
+photoScrap = geosData.photoScrap
 
 # it seems the "official" geoColorChoice is fg: color0, bg: color15
 
