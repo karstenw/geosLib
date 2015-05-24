@@ -46,9 +46,3 @@ python geowrite2rtf.py CVTFile
 
 + Clean the mess up and finish this trip on memory lane.
 
-
-# Some (cropped) old images:
-![Woodblock](./images/Woodblock.png?raw=true)
-![Lobster](./images/Lobster.png?raw=true)
-![Shuttlelaunch](./images/Shuttlelaunch_col.png?raw=true)
-![Zebragirl](./images/ZEBRAGIRL_bw.png?raw=true)
