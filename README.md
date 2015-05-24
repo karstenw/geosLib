@@ -1,6 +1,6 @@
 # geoPaint to PNG converter
 
-A bunch of Python scripts to convert [GEOS](https://www.c64-wiki.de/index.php/GEOS) geoPaint images and Photo Album files in the CBM convert format to PNG.
+A bunch of Python scripts to convert [GEOS](https://www.c64-wiki.de/index.php/GEOS) geoPaint, geoWrite, Photo Album and Photo Scrap files in the CBM convert format to PNG for the images and to RTFD, TXT & HTML for the text formats.
 
 
 Inspired by [geowrite2rtf](https://github.com/mist64/geowrite2rtf) by [Michael Steil](http://www.pagetable.com/). If you haven't seen his  [c64talk](https://www.youtube.com/watch?v=ZsRRCnque2E), go watch it.
@@ -15,6 +15,7 @@ The speed is now acceptable. It has been at 1.5s for 1 document. Now it converts
 
 
 # Update
+
 
 + The essential bug that made me output bw and color versions has been found: the entry for white in the color look up table was wrong. White was nearly black...
 
@@ -46,3 +47,4 @@ python geowrite2rtf.py CVTFile
 
 + Clean the mess up and finish this trip on memory lane.
 
++ Read D64, D71 & D81 disk images directly
