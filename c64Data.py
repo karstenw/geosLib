@@ -9,6 +9,7 @@ import datetime
 import pdb
 kwlog = 0
 
+# unused and incomplete (yet)
 fontmapping = {
     0: ('BSW', ''),
     1: ('University', ''),
@@ -74,12 +75,16 @@ geosFileTypes = {
     14: 'Auto Executing',
     15: 'Input 128'}
 
+filetypesWithAuthor = (
+    1, 2, 5, 6, 9, 10, 15)
+
 dosFileTypes = {
     0: 'DEL',
     1: 'SEQ',
     2: 'PRG',
     3: 'USR',
-    4: 'REL'}
+    4: 'REL',
+    5: 'CBM'}
 
 fourtyEighty = {
     0:    "GEOS 64/128 40 columns",
@@ -404,6 +409,93 @@ def hexdump( s ):
         sys.stdout.write(t+' ')
         if i & 15 == 15:
             sys.stdout.write('\n')
+
+
+# drive geometries
+d1541Sectors = (
+    ( 0,  0,  0),
+    ( 1, 17, 21),
+    (18, 24, 19),
+    (25, 30, 18),
+    (31, 35, 17) )
+
+d1571Sectors = (
+    ( 0,  0,  0),
+    # side 1
+    ( 1, 17, 21),
+    (18, 24, 19),
+    (25, 30, 18),
+    (31, 35, 17),
+    # side 2
+    (36, 52, 21),
+    (53, 59, 19),
+    (60, 65, 18),
+    (66, 70, 17))
+
+d1581Sectors = (
+    ( 0,  0,  0),
+    # side 1
+    ( 1, 40, 40),
+    # side 2
+    (41, 80, 40) )
+
+imagesizes = {
+    # ext, filesize, sector count
+
+    '.d64': ((174848,  683),),
+
+    '.d81': ((819200, 3200),),
+
+    '.d71': ((349696, 1366),
+             (349696+1366, 1366))
+
+}
+    
+
+def getTrackOffsetList( sizelist ):
+    """calculate sectorOffset per Track, track Byte offstes and
+       sectors per track lists."""
+
+    offset = 0
+    sectorsize=256
+    sectorOffsets = []
+    trackByteOffsets = []
+    sectorsPerTrack = []
+    for start, end, sectors in sizelist:
+        for track in range(start, end+1):
+            offset += sectors 
+            sectorOffsets.append(offset)
+            sectorsPerTrack.append( sectors )
+    for start, end, sectors in sizelist:
+        for track in range(start, end+1):
+            if track == 0:
+                continue
+            trackByteOffsets.append( (sectorOffsets[track-1]) * sectorsize )
+    return sectorOffsets, trackByteOffsets, sectorsPerTrack
+
+
+
+
+
+
+class DiskImage(object):
+
+
+    d1541HeaderTS = (18, 0)
+    d1581HeaderTS = (40, 0)
+
+    d1541HdrStruct = "< xx x x 140x 16s xx 2s x xx xxxx 85x"
+    d1541Names = ("next format dum1 bam nameraw dum2 diskid "
+                  "dum3 dosversion dum4 dum5").split()
+
+    d1581HdrStruct = "< xx x x 16s xx 2s x xx xx 227x"
+    d1581Names = ("next format dum1 nameraw dum2 diskid "
+                  "dum3 dosversion dum4 dum5").split()
+
+    def __init__(self, stream=None, filepath=None):
+        pass
+
+
 
 if __name__ == '__main__':
     import PIL
