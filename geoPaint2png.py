@@ -190,15 +190,6 @@ if __name__ == '__main__':
                 out.write( c )
                 out.close()
 
-
-        # currently only vlir files
-        if gde.geosFileStructureString != "VLIR":
-            if not gpf.vlir.header.classNameString.startswith("Photo Scrap V"):
-                # sequential files only for PHOTO SCRAP
-                print 
-                print "IGNORED:", repr(f)
-                continue
-
         gdh = gpf.vlir.header
 
         # print file info
