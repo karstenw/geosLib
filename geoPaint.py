@@ -31,24 +31,30 @@ def expandImageStream( s ):
         j += 1
         code = ord(s[j])
         items = []
+        roomleft = (n-1) - j
         if 0: #code == 0:
-            while len(image) < 1448:
-                image.append( 0 )
             break
         if code in (64, 128):
             if kwdbg:
                 print "blank code 64,128 encountered."
                 pdb.set_trace()
+            continue
 
         if code < 64:
+            if roomleft < 1:
+                j += 1
+                continue
             data = s[j+1:j+code+1]
             for i in data:
                 items.append( ord(i) )
             j += len(data)
             image.extend( items )
+            continue
 
         elif 64 <= code < 128:
-            
+            if roomleft < 8:
+                j += 8
+                continue
             c = code & 63
             pattern = s[j+1:j+9]
             pn = len(pattern)
@@ -59,16 +65,22 @@ def expandImageStream( s ):
                     items.append( ord(p) )
             j += pn
             image.extend( items )
+            continue
 
         elif 128 <= code:
+            if roomleft < 1:
+                j += 1
+                continue
             c = code - 128
             data = ord(s[j+1])
             t = [data] * c
             items = t
             image.extend( items )
             j += 1
+            continue
 
-        log.append( items )
+        if kwdbg:
+            log.append( items )
     return image
 
 
@@ -235,15 +247,27 @@ def imageband2PNG( image, cardsw, cardsh, isGeoPaint):
     else:
         # TBD
         # Here is still work todo
-        print  
-        if kwdbg:
-            pdb.set_trace()
-        print  "UNUSUAL SIZE!!"
-        print n
-        print expectedSize
-
-        
-        print
+        if n > expectedSize:
+            i0 = image[:bitmapsize]
+            c0 = image[-colormapsize:]
+            legap = image[bitmapsize:-colormapsize]
+            #pdb.set_trace()
+            #hexdump( legap )
+            image = []
+            image.extend( i0 )
+            image.extend( [0] * 8 )
+            image.extend( c0 )
+            n = len(image)
+        else:
+            print  
+            if kwdbg or 1:
+                pdb.set_trace()
+            print  "UNUSUAL SIZE!!"
+            print cardsw, cardsh
+            print cardsw * cardsh
+            print n
+            print expectedSize
+            print
 
     # extract color data
     offset = cardsw * h + 8
