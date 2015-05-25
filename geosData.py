@@ -401,7 +401,8 @@ def convertGeoPaintFile( vlir, folder ):
     for i,chain in enumerate(vlir.chains):
         if chain == (0,0):
             break
-        if chain == (0,255):
+        # if chain == (0,255):
+        if type(chain) in (list, tuple):
             #print "EMPTY BAND!"
             col, bw = coldummy.copy(), bwdummy.copy()
         else:
@@ -593,11 +594,19 @@ def getGeoWriteStream(items, chain, chains, log, flags):
             chainindex = ord(chain[j+4])
 
             if 63 <= chainindex <= 127:
-                colimg, bwimg = photoScrap( chains[chainindex] )
-                image = colimg
+                if not chains:
+                    j += 4
+                    continue
+                try:
+                    image, bwimg = photoScrap( chains[chainindex] )
+                except Exception, err:
+                    j += 4
+                    continue
+                    
                 if not (width and height and image):
                     j += 4
                     continue
+                
                 imagename = str(chainindex).rjust(5, '0') + ".png"
                 # image.save(imagename)
                 rtfs = "{{\\NeXTGraphic %s \\width%i \\height%i} " + chr(0xac) + "}"
@@ -776,7 +785,7 @@ def getGeoWriteStream(items, chain, chains, log, flags):
     return items, log
 
 
-def convertTextDoc( vlir, folder, flags ):
+def convertWriteImage( vlir, folder, flags=(1,1) ):
 
     # prepare
     log = []
