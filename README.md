@@ -25,6 +25,9 @@ The speed is now acceptable. It has been at 1.5s for 1 document. Now it converts
 
 + Photo Album V2.1 works now. Scrap name gets copied into outfilename.
 
++ Now d64, d81 as well as their gzipped, zipped and zip collected variants can now be read. See geosFiletypeScanner.py tries to read anything you throw at it...
+
+
 # Requisites
 + [pillow](https://github.com/python-pillow/Pillow)
 
@@ -43,8 +46,4 @@ python geowrite2rtf.py CVTFile
 
 + Text Album files
 
-+ Text Scrap files
-
 + Clean the mess up and finish this trip on memory lane.
-
-+ Read D64, D71 & D81 disk images directly
