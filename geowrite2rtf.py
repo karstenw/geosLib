@@ -52,8 +52,8 @@ def convertWriteDocument( f ):
                 "Write Image V2.0",
                 "Write Image V2.1",
                 "text album  V1.0",
-                "text album  V1.1",
-                "text album  V2.0",
+                'text album  V1.0',
+                'text album  V2.1',
                 "text album  V2.1",
                 "Text  Scrap V1.0",
                 "Text  Scrap V1.1",
@@ -62,7 +62,7 @@ def convertWriteDocument( f ):
         print "IGNORED:", repr( infile )
         return ""
 
-    convertTextDoc( gpf.vlir, folder, (SUPPRESS_NUL, FF_TO_LF) )
+    convertWriteImage( gpf.vlir, folder, (SUPPRESS_NUL, FF_TO_LF) )
     
 if __name__ == '__main__':
     for f in sys.argv[1:]:
