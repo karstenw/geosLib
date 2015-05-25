@@ -24,6 +24,22 @@ import pprint
 pp = pprint.pprint
 
 
+# it seems the "official" geoColorChoice is fg: color0, bg: color15
+bgcol = c64colors[15]
+if kwdbg:
+    bgcol = c64colors[14]
+
+# make a white bands for empty records
+bytes = [ chr(bgcol[0]),chr(bgcol[1]),chr(bgcol[2]) ] * (640*16)
+bytes = ''.join( bytes )
+coldummy = PIL.Image.frombytes('RGB', (640,16), bytes, decoder_name='raw')
+
+bytes = [ chr(255) ] * 1280
+bytes = ''.join( bytes )
+bwdummy = PIL.Image.frombytes('1', (640,16), bytes, decoder_name='raw')
+
+
+
 def expandImageStream( s ):
     n = len(s)
     j = -1
@@ -163,7 +179,7 @@ def photoScrap( s ):
     return False, False
 
 
-def geoPaintBand( s, version ):
+def geoPaintBand( s ):
     if s in ( None, (0,255), (0,0)):
         return False, False
     cardsw = 80
@@ -262,15 +278,14 @@ def imageband2PNG( image, cardsw, cardsh, isGeoPaint):
             image.extend( c0 )
             n = len(image)
         else:
-            print  
-            if kwdbg or 1:
-                pdb.set_trace()
-            print  "UNUSUAL SIZE!!"
-            print cardsw, cardsh
-            print cardsw * cardsh
-            print n
-            print expectedSize
-            print
+            if kwdbg:
+                print  
+                print  "UNUSUAL SIZE!!"
+                print cardsw, cardsh
+                print cardsw * cardsh
+                print n
+                print expectedSize
+                print
 
     # extract color data
     offset = cardsw * h + 8
@@ -371,6 +386,120 @@ def imageband2PNG( image, cardsw, cardsh, isGeoPaint):
     return (colimg, bwimg)
 
 
+def convertGeoPaintFile( vlir, folder ):
+    # gpf, gdh
+    outnamebase = vlir.dirEntry.fileName
+    outnamebase = outnamebase.replace(":", "_")
+    outnamebase = outnamebase.replace("/", "_")
+    if kwdbg:
+        print repr(outnamebase)
+
+    colimg = PIL.Image.new('RGB', (80*8,90*8), 1)
+    bwimg = PIL.Image.new('1', (80*8,90*8), 1)
+    # pdb.set_trace()
+
+    for i,chain in enumerate(vlir.chains):
+        if chain == (0,0):
+            break
+        if chain == (0,255):
+            #print "EMPTY BAND!"
+            col, bw = coldummy.copy(), bwdummy.copy()
+        else:
+            col, bw = geoPaintBand( chain )
+        if not col:
+            # print "NO BAND!"
+            col = coldummy.copy()
+        colimg.paste( col, (0,i*16,640,(i+1)*16))
+        if not bw:
+            bw = bwdummy.copy()
+        bwimg.paste( bw, (0,i*16,640,(i+1)*16))
+
+    outfilecol = os.path.join( folder, outnamebase + "_col.png" )
+    outfilebw = os.path.join( folder, outnamebase + "_bw.png" )
+    colimg.save(outfilecol)
+    bwimg.save(outfilebw)
+
+
+def convertPhotoAlbumFile( vlir, folder ):
+    # f, gpf
+    outnamebase = vlir.dirEntry.fileName
+    outnamebase = outnamebase.replace(":", "_")
+    outnamebase = outnamebase.replace("/", "_")
+    # folder = gpf.folder
+    print repr(outnamebase)
+
+    # extract clip names for Photo Album V2.1
+    clipnames = [ "" ] * 127
+    clipnameschain = 256
+    if vlir.header.className == "photo album V2.1":
+        # scan for last chain
+        if (0,0) in vlir.chains:
+            clipnameschain = vlir.chains.index( (0,0) ) - 1
+            clipnamesstream = vlir.chains[clipnameschain]
+            noofentries = ord(clipnamesstream[0])
+            for i in range(noofentries):
+                base = 1 + i*17
+                namebytes = clipnamesstream[base:base+16]
+                namebytes = namebytes.replace( chr(0x00), "" )
+                namebytes = namebytes.replace( '/', "-" )
+                namebytes = namebytes.replace( ':', "_" )
+                clipnames[i] = namebytes
+    
+    for i,chain in enumerate(vlir.chains):
+        if chain in ((0,0), (0,255), None, False):
+            continue
+        if i == clipnameschain:
+            # names record
+            continue
+
+        col, bw = photoScrap( chain )
+        
+        clipname = ""
+        if clipnames[i]:
+            clipname = '-"' + clipnames[i] + '"'
+        if col:
+            suf = '-' + str(i+1).rjust(3,'0') + clipname + "_col.png"
+            of = os.path.join( folder, outnamebase + suf )
+            col.save( of )
+        else:
+            print "No color image for vlir: %i" % i
+        if bw:
+            suf = '-' + str(i+1).rjust(3,'0') + clipname + "_bw.png"
+            of = os.path.join( folder, outnamebase + suf )
+            bw.save( of )
+        else:
+            print "No bw image for vlir: %i" % i
+            
+
+
+def convertPhotoScrapFile( vlir, folder):
+    # f, gpf, gdh
+    if kwlog:
+        print "convertPhotoScrapFile( f, gpf, gdh)"
+    
+    outnamebase = vlir.dirEntry.fileName
+    outnamebase = outnamebase.replace(":", "_")
+    outnamebase = outnamebase.replace("/", "_")
+    # folder = gpf.folder
+    print repr(outnamebase)
+
+    for i,chain in enumerate(vlir.chains):
+        if chain == (0,0):
+            break
+        if chain == (0,255):
+            continue
+
+        col, bw = photoScrap( chain )
+
+        if col:
+            suf = '-' + str(i+1).rjust(3,'0') + "_col.png"
+            of = os.path.join( folder, outnamebase + suf )
+            col.save( of )
+        if bw:
+            suf = '-' + str(i+1).rjust(3,'0') + "_bw.png"
+            of = os.path.join( folder, outnamebase + suf )
+            bw.save( of )
+
 
 class ItemCollector(object):
     """Collect the rtf, html and image snippets for second pass assembly.
@@ -400,6 +529,7 @@ class ItemCollector(object):
         self.imagecollection[name] = (w,h,img)
 
 
+# make this work on VLIRFile + index
 def getGeoWriteStream(items, chain, chains, log, flags):
     """Decode a geoWrite Stream; usually a page of a document.
     
@@ -644,3 +774,65 @@ def getGeoWriteStream(items, chain, chains, log, flags):
         print "<<<New Page>>>"
     
     return items, log
+
+
+def convertTextDoc( vlir, folder, flags ):
+
+    # prepare
+    log = []
+    basename = vlir.dirEntry.fileName
+    ic = ItemCollector()
+    ic.initDoc( basename )
+    chains = vlir.chains
+
+    
+    # page loop
+    for idx,chain in enumerate(chains):
+        # pdb.set_trace()
+        if chain in ( (0,0), (0,255), None, False):
+            continue
+
+        if idx >= 61:
+            break
+
+        ic, log = getGeoWriteStream(ic, chain, chains, log, flags)
+
+    # finish doc
+    ic.finishDoc()
+    ic.addRTF( "}" )
+
+    # write out
+    rtfs = ''.join( ic.rtfcollection )
+    htmls = ''.join( ic.htmlcollection )
+    texts = ''.join( ic.textcollection )
+
+    rtfoutfolder = os.path.join( folder, basename + ".rtfd" )
+    if not os.path.exists( rtfoutfolder ):
+        os.makedirs( rtfoutfolder )
+    rtfoutfile = os.path.join( rtfoutfolder, "TXT.rtf")
+    f = open(rtfoutfile, 'wb')
+    f.write( rtfs )
+    f.close()
+
+    htmloutfolder = os.path.join( folder, basename + "_html" )
+    if not os.path.exists( htmloutfolder ):
+        os.makedirs( htmloutfolder )
+    htmloutfile = os.path.join( htmloutfolder, "index.html")
+    f = open(htmloutfile, 'wb')
+    f.write( htmls )
+    f.close()
+
+    textoutfile = os.path.join(folder, basename + ".txt")
+    f = open(textoutfile, 'wb')
+    f.write( texts )
+    f.close()
+
+    # write images
+    for filename in ic.imagecollection:
+        w,h,img = ic.imagecollection[filename]
+    
+        rtfimage = os.path.join( rtfoutfolder, filename )
+        htmlimage = os.path.join( htmloutfolder, filename )
+        img.save( rtfimage )
+        img.save( htmlimage )
+
