@@ -26,6 +26,7 @@ GEOSHeaderBlock = c64Data.GEOSHeaderBlock
 VLIRFile = c64Data.VLIRFile
 CBMConvertFile = c64Data.CBMConvertFile
 hexdump = c64Data.hexdump
+DiskImage = c64Data.DiskImage 
 
 import geosData
 geoPaintBand = geosData.geoPaintBand
@@ -60,7 +61,7 @@ def convertGeoPaintFile( infile, gpf, gdh):
     # pdb.set_trace()
 
     version = 1
-    if gdh.classNameString == "Paint Image V1.0":
+    if gdh.className == "Paint Image V1.0":
         version = 1
     chains = gpf.vlir.chains
     for i,chain in enumerate(chains):
@@ -98,7 +99,7 @@ def convertPhotoAlbumFile( f, gpf, gdh):
     # extract clip names for Photo Album V2.1
     clipnames = [ "" ] * 127
     clipnameschain = 256
-    if gdh.classNameString == "photo album V2.1":
+    if gdh.className == "photo album V2.1":
         # scan for last chain
         if (0,0) in chains:
             clipnameschain = chains.index( (0,0) ) - 1
@@ -199,22 +200,22 @@ if __name__ == '__main__':
         gde.prnt()
         print "----"
 
-        if gdh.classNameString.startswith("Paint Image V"):
+        if gdh.className.startswith("Paint Image V"):
             gdh.prnt()
             print '-' * 80
             convertGeoPaintFile( f, gpf, gdh)
-        elif gdh.classNameString.startswith("photo album V"):
+        elif gdh.className.startswith("photo album V"):
             # pdb.set_trace()
             gdh.prnt()
             print '-' * 80
             convertPhotoAlbumFile( f, gpf, gdh)
-        elif gdh.classNameString.startswith("Photo Scrap V"):
+        elif gdh.className.startswith("Photo Scrap V"):
             gdh.prnt()
             print '-' * 80
             convertPhotoScrapFile( f, gpf, gdh)
         else:
             print
             print "NOT PROCESSED:", repr(f)
-            print "Class:", repr(gdh.classNameString)
+            print "Class:", repr(gdh.className)
             print '#' * 80
             print
