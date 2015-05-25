@@ -34,11 +34,8 @@ The speed is now acceptable. It has been at 1.5s for 1 document. Now it converts
 # Usage:
 ```
 
-# for geoPaint, Photo Album & Photo Scrap files
+# for CBM Convert files in geoPaint, Photo Album, Photo Scrap, geoWrite, Text Album and Text Scrap format:
 python geoPaint2png.py *.cvt
-
-# for a geoWrite file
-python geowrite2rtf.py CVTFile
 
 ```
 
