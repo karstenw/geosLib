@@ -20,7 +20,7 @@ GEOSHeaderBlock = c64Data.GEOSHeaderBlock
 CBMConvertFile = c64Data.CBMConvertFile
 
 import geosData
-convertTextDoc = geosData.convertTextDoc
+convertWriteImage = geosData.convertWriteImage
 
 SUPPRESS_NUL = False
 FF_TO_LF = False

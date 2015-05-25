@@ -19,23 +19,14 @@ import pprint
 pp = pprint.pprint
 
 import c64Data
-fontmapping = c64Data.fontmapping
-c64colors = c64Data.c64colors
-GEOSDirEntry = c64Data.GEOSDirEntry
-GEOSHeaderBlock = c64Data.GEOSHeaderBlock
-VLIRFile = c64Data.VLIRFile
 CBMConvertFile = c64Data.CBMConvertFile
-hexdump = c64Data.hexdump
-DiskImage = c64Data.DiskImage 
 
 import geosData
-geoPaintBand = geosData.geoPaintBand
-photoScrap = geosData.photoScrap
 convertGeoPaintFile = geosData.convertGeoPaintFile
 convertPhotoAlbumFile = geosData.convertPhotoAlbumFile
 convertPhotoScrapFile = geosData.convertPhotoScrapFile
 
-
+textTypes = geosData.textTypes
 
 
 if __name__ == '__main__':
@@ -87,6 +78,18 @@ if __name__ == '__main__':
                 vlir.header.prnt()
                 print '-' * 80
             convertPhotoScrapFile( vlir, folder )
+        elif vlir.header.className.startswith("Photo Scrap V"):
+            if kwdbg:
+                vlir.header.prnt()
+                print '-' * 80
+            convertPhotoScrapFile( vlir, folder )
+        elif vlir.header.className in textTypes:
+            if kwdbg:
+                gfh.prnt()
+                print '-' * 80
+            convertWriteImage( vlir, folder )
+
+
         else:
             print
             print "NOT PROCESSED:", repr(f)

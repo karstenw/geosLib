@@ -40,6 +40,44 @@ bwdummy = PIL.Image.frombytes('1', (640,16), bytes, decoder_name='raw')
 
 
 
+acceptedTypes = (
+    'Paint Image V1.0',
+    'Paint Image V1.1',
+    'Paint Image v1.1',
+
+    'photo album V1.0',
+    'photo album V2.1',
+
+    'Photo Scrap V1.0',
+    'Photo Scrap V1.1',
+    
+    'Write Image V1.0',
+    'Write Image V1.1',
+    'Write Image V2.0',
+    'Write Image V2.1',
+
+    'text album  V1.0',
+    'text album  V2.1',
+
+    'Text  Scrap V1.0',
+    'Text  Scrap V1.1',
+    'Text  Scrap V2.0')
+
+textTypes = (
+    'Write Image V1.0',
+    'Write Image V1.1',
+    'Write Image V2.0',
+    'Write Image V2.1',
+    
+    'text album  V1.0',
+    'text album  V2.1',
+
+    'Text  Scrap V1.0',
+    'Text  Scrap V1.1',
+    'Text  Scrap V2.0')
+
+
+
 def expandImageStream( s ):
     n = len(s)
     j = -1
@@ -391,7 +429,7 @@ def convertGeoPaintFile( vlir, folder ):
     outnamebase = vlir.dirEntry.fileName
     outnamebase = outnamebase.replace(":", "_")
     outnamebase = outnamebase.replace("/", "_")
-    if kwdbg:
+    if 1 or kwdbg:
         print repr(outnamebase)
 
     colimg = PIL.Image.new('RGB', (80*8,90*8), 1)

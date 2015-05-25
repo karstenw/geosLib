@@ -46,4 +46,6 @@ python geowrite2rtf.py CVTFile
 
 + Text Album files
 
++ Some differences between "Write Image V2.0" and "Write Image V2.1"
+
 + Clean the mess up and finish this trip on memory lane.
