@@ -115,22 +115,27 @@ if __name__ == '__main__':
     fileTree = {}
 
     for f in sys.argv[1:]:
+
         # pdb.set_trace()
+
+        f = os.path.abspath(os.path.expanduser(f))
+        folder, filename = os.path.split( f )
+        basename, ext = os.path.splitext( filename )
+
+        print "\n\n\n"
+        print "#" * 120
+        print "SOURCE:", repr(f)
+        print "#" * 120
+
+        
         if os.path.isdir(f):
             files = iterateFolders( f )
         else:
-            f = os.path.abspath(os.path.expanduser(f))
-            folder, filename = os.path.split( f )
-            basename, ext = os.path.splitext( filename )
+            # make a file behave like it came from the iterator
             typ = ext.lower()
             files = [ (typ,f) ]
 
         for typ, path in files:
-            print "\n\n\n"
-            print "#" * 120
-            print "#" * 120
-            print repr(path)
-            print "#" * 120
 
             result = []
             if typ in ('.gz', '.zip'):
@@ -149,7 +154,7 @@ if __name__ == '__main__':
 
             elif typ in ('.d64', '.d81'):
                 images += 1
-                data = DiskImage( path )
+                data = DiskImage( filepath=path )
                 result.extend( data.files )
 
             else:
@@ -159,10 +164,10 @@ if __name__ == '__main__':
 
             for cbmfile in result:
                 totalCBMFiles += 1
-                if path not in fileTree:
-                    fileTree[path] = []
+                #if path not in fileTree:
+                #    fileTree[path] = []
                 
-                # fileTree[path].append( )
+                #fileTree[path].append( cbmfile )
                 try:
                     gde = cbmfile.dirEntry
                 except AttributeError, err:
@@ -170,33 +175,36 @@ if __name__ == '__main__':
                     pdb.set_trace()
                     print 
 
+                # print directory entry
+                gde.smallprnt()
+
                 if cbmfile.header == "":
                     continue
 
                 if gde.isGEOSFile:
                     gfh = cbmfile.header
-                    try:
-                        gfh.prnt()
-                    except AttributeError, err:
-                        print err
-                        pdb.set_trace()
-                        print 
+                    #try:
+                    #    gfh.prnt()
+                    #except AttributeError, err:
+                    #    print err
+                    #    pdb.set_trace()
+                    #    print 
                     # hexdump(gfh.rawdata, 32)
                     gfh = cbmfile.header
                     geosClasses.add( gfh.className )
-                    if gfh.fileType in programTypes:
-                        pdb.set_trace()
+                    if gfh.geosFileType in programTypes:
+                        # pdb.set_trace()
                         geosApplications.add(gde.fileName)
-                        geosAuthors.add( gdh.author )
-    print "\n" * 5
+                        geosAuthors.add( gfh.author )
+    print "\n" * 2
     print "Authors"
     pp(geosAuthors)
     
-    print "\n" * 5
+    print "\n" * 2
     print "Applications"
     pp(geosApplications)
     
-    print "\n" * 5
+    print "\n" * 2
     print "Classes"
     pp(geosClasses)
 
