@@ -12,7 +12,7 @@ pp = pprint.pprint
 
 
 import pdb
-kwdbg = 1
+kwdbg = 0
 kwlog = 0
 
 # unused and incomplete (yet)
@@ -212,6 +212,9 @@ class VLIRFile(object):
         self.chains = [ (0x00, 0xff) ] * 127
         self.header = ""
         self.dirEntry = ""
+        # for saving
+        self.folder = ""
+        self.filename = ""
 
 def cleanupString( s ):
     # remove garbage
@@ -510,6 +513,7 @@ extToImagesize = {
 imagesizeToExt = {
     # filesize, ext, sector count
     174848: ( '.d64',  683),
+    175531: ( '.d64',  683),
     819200: ('.d81', 3200),
     349696: ('.d71', 1366),
     351062: ('.d71', 1366)}
