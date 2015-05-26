@@ -25,7 +25,7 @@ import geosData
 convertGeoPaintFile = geosData.convertGeoPaintFile
 convertPhotoAlbumFile = geosData.convertPhotoAlbumFile
 convertPhotoScrapFile = geosData.convertPhotoScrapFile
-
+convertWriteImage = geosData.convertWriteImage
 textTypes = geosData.textTypes
 
 

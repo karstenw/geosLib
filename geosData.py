@@ -429,8 +429,8 @@ def convertGeoPaintFile( vlir, folder ):
     outnamebase = vlir.dirEntry.fileName
     outnamebase = outnamebase.replace(":", "_")
     outnamebase = outnamebase.replace("/", "_")
-    if 1 or kwdbg:
-        print repr(outnamebase)
+
+    print repr(outnamebase)
 
     colimg = PIL.Image.new('RGB', (80*8,90*8), 1)
     bwimg = PIL.Image.new('1', (80*8,90*8), 1)
@@ -512,10 +512,7 @@ def convertPhotoAlbumFile( vlir, folder ):
 
 
 def convertPhotoScrapFile( vlir, folder):
-    # f, gpf, gdh
-    if kwlog:
-        print "convertPhotoScrapFile( f, gpf, gdh)"
-    
+
     outnamebase = vlir.dirEntry.fileName
     outnamebase = outnamebase.replace(":", "_")
     outnamebase = outnamebase.replace("/", "_")
@@ -832,6 +829,7 @@ def convertWriteImage( vlir, folder, flags=(1,1) ):
     ic.initDoc( basename )
     chains = vlir.chains
 
+    print repr(basename)
     
     # page loop
     for idx,chain in enumerate(chains):
