@@ -46,3 +46,9 @@ python geoPaint2png.py *.cvt
 + Some differences between "Write Image V2.0" and "Write Image V2.1"
 
 + Clean the mess up and finish this trip on memory lane.
+
+# Summary
+
++ Send CBM CVT files to CBMConvertFile (in C64Data) DiskImages to DiskImage (also in c64Data). Look at geosFiletypeScanner's function on how to handle gzip and zip files.
+
++ IOW: get your geos file into a VLIRFile structure. The name is misleading since SEQ files go there too. That's what any of the conversion functions in geosData.py expect.
