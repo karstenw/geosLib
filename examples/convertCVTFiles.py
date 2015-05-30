@@ -52,7 +52,7 @@ if __name__ == '__main__':
                 out.close()
 
         vlir = gpf.vlir
-        gdh = gpf.vlir.header
+        gfh = gpf.vlir.header
 
         if kwdbg:
             # print file info
@@ -82,7 +82,13 @@ if __name__ == '__main__':
                 gfh.prnt()
                 print '-' * 80
             convertWriteImage( vlir, folder )
-
+        elif 0: #vlir.header.className.startswith("Publish Doc "):
+            if 1:
+                hd = geosLib.hexdump
+                gfh.prnt()
+                print '-' * 80
+            pdb.set_trace()
+            print
 
         else:
             print
