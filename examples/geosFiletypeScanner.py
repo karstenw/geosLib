@@ -17,17 +17,16 @@ kwlog = 0
 import pprint
 pp = pprint.pprint
 
-import c64Data
-GEOSDirEntry = c64Data.GEOSDirEntry
-GEOSHeaderBlock = c64Data.GEOSHeaderBlock
-VLIRFile = c64Data.VLIRFile
-CBMConvertFile = c64Data.CBMConvertFile
-hexdump = c64Data.hexdump
-DiskImage = c64Data.DiskImage
-imagesizeToExt = c64Data.imagesizeToExt
-filetypesWithAuthor = c64Data.filetypesWithAuthor
-programTypes = c64Data.programTypes
-import geosData
+import geosLib
+GEOSDirEntry = geosLib.GEOSDirEntry
+GEOSHeaderBlock = geosLib.GEOSHeaderBlock
+VLIRFile = geosLib.VLIRFile
+CBMConvertFile = geosLib.CBMConvertFile
+hexdump = geosLib.hexdump
+DiskImage = geosLib.DiskImage
+imagesizeToExt = geosLib.imagesizeToExt
+filetypesWithAuthor = geosLib.filetypesWithAuthor
+programTypes = geosLib.programTypes
 
 
 def makeunicode( s, enc="utf-8", normalizer='NFC'):
