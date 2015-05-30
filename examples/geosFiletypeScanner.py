@@ -28,75 +28,9 @@ imagesizeToExt = geosLib.imagesizeToExt
 filetypesWithAuthor = geosLib.filetypesWithAuthor
 programTypes = geosLib.programTypes
 
-
-def makeunicode( s, enc="utf-8", normalizer='NFC'):
-    try:
-        if type(s) != unicode:
-            s = unicode(s, enc)
-    except:
-        pass
-    s = unicodedata.normalize(normalizer, s)
-    return s
-
-def getCompressedFile( path, typ ):
-    # limit size of files to 10MB
-    s = os.stat( path )
-    if s.st_size > 10*2**20:
-        return []
-    if typ == '.gz':
-        f = gzip.open(path, 'rb')
-        file_content = f.read()
-        f.close()
-        # only return those streams that have a chance of being an image
-        if len(file_content) in imagesizeToExt:
-            di = DiskImage( stream=file_content, tag=path )
-            return di.files
-    elif typ == '.zip':
-        try:
-            handle = zipfile.ZipFile(path, 'r')
-            files = handle.infolist()
-        except Exception, err:
-            print "ZIP ERROR", err
-            return []
-        result = []
-        for zf in files:
-            print "ZIPFILE:", repr( zf.filename )
-            try:
-                h = handle.open(zf)
-                data = h.read()
-            except Exception, err:
-                continue
-            if len(data) in imagesizeToExt:
-                # pdb.set_trace()
-                di = DiskImage( stream=data, tag=path )
-                result.extend( di.files )
-        return result
-    return []
-
-
-def iterateFolders( infolder, validExtensions=('.d64', '.d81', '.zip', '.gz', '.cvt') ):
-    """Iterator that walks a folder and returns all files."""
-    
-    # for folder in dirs:
-    for root, dirs, files in os.walk( infolder ):
-        root = makeunicode( root )
-        result = {}
-        pathlist = []
-
-        for thefile in files:
-            thefile = makeunicode( thefile )
-            basename, ext = os.path.splitext(thefile)
-            
-            typ = ext.lower()
-            if typ not in validExtensions:
-                continue
-
-            if thefile.startswith('.'):
-                continue
-            
-            filepath = os.path.join( root, thefile )
-            filepath = makeunicode( filepath )
-            yield typ, filepath
+makeunicode = geosLib.makeunicode
+getCompressedFile = geosLib.getCompressedFile
+iterateFolders = geosLib.iterateFolders
 
 
 if __name__ == '__main__':
@@ -139,7 +73,7 @@ if __name__ == '__main__':
             result = []
             if typ in ('.gz', '.zip'):
                 # perhaps compressed image
-                data = getCompressedFile(path, typ)
+                data = getCompressedFile(path)
                 if data:
                     compressedImages += 1
                     for item in data:
@@ -194,7 +128,12 @@ if __name__ == '__main__':
                     if gfh.geosFileType in programTypes:
                         # pdb.set_trace()
                         geosApplications.add(gde.fileName)
-                        geosAuthors.add( gfh.author )
+                        a = gfh.author
+                        a = a.strip( geosLib.stripchars )
+                        a = a.strip( '\r\n \t' )
+                        a = a.replace( chr(0xa0), ' ')
+                        a = a.replace( chr(0x00), '_')
+                        geosAuthors.add( a )
     print "\n" * 2
     print "Authors"
     pp(geosAuthors)
