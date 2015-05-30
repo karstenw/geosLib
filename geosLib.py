@@ -155,7 +155,7 @@ sectorTables = {
 
 minMaxTrack = {
     '.d81': (1,80),
-    '.d71': (1,70).
+    '.d71': (1,70),
     '.d64': (1,35),
 }
 
@@ -193,10 +193,11 @@ dirSectorStructures = {
 #
 # some image globals
 # 
+
+
 # it seems the "official" geoColorChoice is:
 #       fg: color0
 #       bg: color15
-
 
 bgcol = c64colors[15]
 if kwdbg:
@@ -213,6 +214,7 @@ coldummy = PIL.Image.frombytes('RGB', (640,16), bytes, decoder_name='raw')
 bytes = [ chr(255) ] * 1280
 bytes = ''.join( bytes )
 bwdummy = PIL.Image.frombytes('1', (640,16), bytes, decoder_name='raw')
+
 
 
 # currently accepted GEOS file types for conversion
@@ -1183,8 +1185,17 @@ def getGeoWriteStream(items, chain, chains, log, flags):
     return items, log
 
 
-def convertWriteImage( vlir, folder, flags=(1,1) ):
-
+def convertWriteImage( vlir, folder, flags=(1,1), rtf=True, html=True, txt=True ):
+    """Convert a VLIRFile to the approbriate text format. The GEOS file class must
+    be one of textTypes.
+    IN:
+        vlir - the VLIRFile of a GEOS file
+        folder - output directory
+        flags - tuple (SUPPRESS_NUL, FF_TO_LF)
+        rtf - if True write rtfd document with image
+        html - if True write html document with images
+        txt - if True write text document
+    """
     # prepare
     log = []
     basename = vlir.dirEntry.fileName
@@ -1214,26 +1225,29 @@ def convertWriteImage( vlir, folder, flags=(1,1) ):
     htmls = ''.join( ic.htmlcollection )
     texts = ''.join( ic.textcollection )
 
-    rtfoutfolder = os.path.join( folder, basename + ".rtfd" )
-    if not os.path.exists( rtfoutfolder ):
-        os.makedirs( rtfoutfolder )
-    rtfoutfile = os.path.join( rtfoutfolder, "TXT.rtf")
-    f = open(rtfoutfile, 'wb')
-    f.write( rtfs )
-    f.close()
+    if rtf:
+        rtfoutfolder = os.path.join( folder, basename + ".rtfd" )
+        if not os.path.exists( rtfoutfolder ):
+            os.makedirs( rtfoutfolder )
+        rtfoutfile = os.path.join( rtfoutfolder, "TXT.rtf")
+        f = open(rtfoutfile, 'wb')
+        f.write( rtfs )
+        f.close()
 
-    htmloutfolder = os.path.join( folder, basename + "_html" )
-    if not os.path.exists( htmloutfolder ):
-        os.makedirs( htmloutfolder )
-    htmloutfile = os.path.join( htmloutfolder, "index.html")
-    f = open(htmloutfile, 'wb')
-    f.write( htmls )
-    f.close()
+    if html:
+        htmloutfolder = os.path.join( folder, basename + "_html" )
+        if not os.path.exists( htmloutfolder ):
+            os.makedirs( htmloutfolder )
+        htmloutfile = os.path.join( htmloutfolder, "index.html")
+        f = open(htmloutfile, 'wb')
+        f.write( htmls )
+        f.close()
 
-    textoutfile = os.path.join(folder, basename + ".txt")
-    f = open(textoutfile, 'wb')
-    f.write( texts )
-    f.close()
+    if txt:
+        textoutfile = os.path.join(folder, basename + ".txt")
+        f = open(textoutfile, 'wb')
+        f.write( texts )
+        f.close()
 
     # write images
     for filename in ic.imagecollection:
@@ -1241,10 +1255,10 @@ def convertWriteImage( vlir, folder, flags=(1,1) ):
     
         rtfimage = os.path.join( rtfoutfolder, filename )
         htmlimage = os.path.join( htmloutfolder, filename )
-        img.save( rtfimage )
-        img.save( htmlimage )
-
-
+        if rtf:
+            img.save( rtfimage )
+        if html:
+            img.save( htmlimage )
 
 #
 # disk image tools
@@ -1356,6 +1370,15 @@ class CBMConvertFile(object):
 
 
 class VLIRFile(object):
+    """The main file holding object in this suite.
+    
+    self.chains -   A list of GEOS VLIR strings OR just the string of any sequential
+                    type in chains[0]
+    self.header -   the GEOS header block. A GEOSHeaderBlock
+    self.dirEntry - The CBM/GEOS dirEntry.  A GEOSDirEntry
+    """
+    
+    
     def __init__(self):
         self.chains = [ (0x00, 0xff) ] * 127
         self.header = ""
