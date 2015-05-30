@@ -36,7 +36,7 @@ acceptedTypes = geosLib.acceptedTypes
 textTypes = geosLib.textTypes
 
 makeunicode = geosLib.makeunicode
-iterateFolders = iterateFolders
+iterateFolders = geosLib.iterateFolders
 
 
 
@@ -118,7 +118,7 @@ if __name__ == '__main__':
                             gde = cbmfile.dirEntry
                         except AttributeError, err:
                             print err
-                            pdb.set_trace()
+                            # pdb.set_trace()
                             print 
                         gde.smallprnt()
 
@@ -151,24 +151,3 @@ if __name__ == '__main__':
                                     gfh.prnt()
                                     print '-' * 80
                                 convertWriteImage( cbmfile, target )
-                        
-    print "\n" * 2
-    print "Authors"
-    pp(geosAuthors)
-    
-    print "\n" * 2
-    print "Applications"
-    pp(geosApplications)
-    
-    print "\n" * 2
-    print "Classes"
-    pp(geosClasses)
-
-    print
-    print "totalCBMFiles:", totalCBMFiles
-    print
-    print "images:", images
-    print
-    print "cvtfiles:", cvtfiles
-    print
-    print "compressedImages:", compressedImages
