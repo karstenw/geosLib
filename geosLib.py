@@ -8,6 +8,9 @@ import os
 import datetime
 import struct
 
+import zipfile
+import gzip
+
 import unicodedata
 
 import PIL

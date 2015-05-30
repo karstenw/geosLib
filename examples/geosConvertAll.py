@@ -37,6 +37,7 @@ textTypes = geosLib.textTypes
 
 makeunicode = geosLib.makeunicode
 iterateFolders = geosLib.iterateFolders
+getCompressedFile = geosLib.getCompressedFile
 
 
 
