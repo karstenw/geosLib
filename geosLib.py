@@ -323,19 +323,19 @@ def getCompressedFile( path, acceptedOnly=False ):
     """Open a gzip or zip compressed file. Return the GEOS and c64 files in contained
     disk image(s)
     
-    Due to it's not yet happened refactoring, the file type ('.gz' or '.zip') has to 
-    
     """
     result = {}
     # limit size of files to 10MB
-    s = os.stat( path )
+    
+    # use a size limit?
     if 0: #s.st_size > 10*2**20:
+        s = os.stat( path )
         return result
 
     folder, filename = os.path.split( path )
     basename, ext = os.path.splitext( filename )
 
-    if typ == '.gz':
+    if ext == '.gz':
         f = gzip.open(path, 'rb')
         foldername = basename + '_gz'
         result[foldername] = []
@@ -351,7 +351,7 @@ def getCompressedFile( path, acceptedOnly=False ):
             else:
                 result[foldername].extend(di.files)
             return result
-    elif typ == '.zip':
+    elif ext == '.zip':
         foldername = basename + '_zip'
         try:
             handle = zipfile.ZipFile(path, 'r')
