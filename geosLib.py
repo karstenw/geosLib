@@ -932,32 +932,86 @@ class ItemCollector(object):
     """Collect the rtf, html and image snippets for second pass assembly.
     """
     def __init__(self):
+        self.title = "Untitled"
         self.textcollection = []
         self.htmlcollection = []
         self.rtfcollection = [ ]
         self.imagecollection = {}
+        self.fontcollection = []
+        self.fontNameID = {}
+        self.fontIDName = {}
 
         
     def initDoc(self, title):
-        self.addRTF( "{\\rtf1 " )
-        self.addHTML( "<!DOCTYPE html><html><head><title>%s</title></head><body>" % title )
+        self.title = title
+        # moved to finishDoc so it get's called at the right moment (that is, right
+        # before finishDoc
     
     def finishDoc( self, s=""):
+        # this was once in initDoc
+        if len(self.rtfcollection) > 0:
+            self.rtfcollection.insert(0, "{\\rtf1 ")
+        else:
+            self.addRTF( "{\\rtf1 " )
+        
+        # add fontdict here
+        #
+        fd = self.rtfFontDict()
+        self.addRTF( fd ) 
+        
+        s = "<!DOCTYPE html><html><head><title>%s</title></head><body>" % self.title
+        if len(self.htmlcollection) > 0:
+            self.htmlcollection.insert(0, s)
+        else:
+            self.addHTML( s )
+
         self.addHTML( "</body></html>" )
         self.addRTF( "}" )
     
     def addHTML(self, s):
         self.htmlcollection.append(s)
+
     def addRTF(self, s):
         self.rtfcollection.append(s)
+
     def addTEXT(self, s):
         self.textcollection.append(s)
+
     def addImage(self, name, w, h, img):
         self.imagecollection[name] = (w,h,img)
 
+    def addFont(self, fontname):
+        if fontname not in self.fontcollection:
+            self.fontcollection.append( fontname )
+        idx = self.fontcollection.index( fontname )
+        self.fontNameID[fontname] = idx
+        self.fontIDName[idx] = fontname
+
+    def getFontID(self, fontname):
+        if fontname not in self.fontNameID:
+            self.addFont( fontname )
+        return self.fontNameID[fontname]
+
+    def rtfFontDict(self):
+        if not self.fontNameID:
+            return ""
+        # pdb.set_trace()
+        sstart = "{\\fonttbl"
+        send = "}"
+        sitem = "\\f%i\\fnil\\fcharset0 %s;"
+        keys = self.fontIDName.keys()
+        keys.sort()
+        items = [ sstart ]
+        for key in keys:
+            v = self.fontIDName[key]
+            items.append( sitem % (key, v) )
+        items.append( send )
+        return ''.join( items )
+        # s = "\f0\fnil\fcharset0 Democratika;\f1\fnil\fcharset0 DesignerBlock;\f2\fswiss\fcharset0 Helvetica;}"
+
 
 # make this work on VLIRFile + index
-def getGeoWriteStream(items, chain, chains, log, flags):
+def getGeoWriteStream(items, chain, chains, log, flags=(0,0)):
     """Decode a geoWrite Stream; usually a page of a document.
     
     IN: items   - collector for RTF, HTML and TXT snippets
@@ -969,6 +1023,7 @@ def getGeoWriteStream(items, chain, chains, log, flags):
     style = 0
     font_size = 0
     font_id = 0
+    font_name = "Arial"
     n = len(chain)
     j = -1
     while j < n-1:
@@ -1125,16 +1180,33 @@ def getGeoWriteStream(items, chain, chains, log, flags):
             fontid = newfont >> 5
             fontsize = newfont & 0x1f
             newstyle = ord(chain[j+3])
-    
+            fontname = fontmapping.get(fontid, ("", "Arial"))
+            if fontname[1]:
+                fontname = fontname[1]
+            else:
+                fontname = "Arial"
+
             if kwlog:
                 print "segment:", repr(chain[j:j+4])
                 print "<<<NEWCARDSET Escape>>>"
                 print "fontID:", fontid
+                print "fontName:", fontname
                 print "font size:", fontsize
                 print "style:", bin(style)
-    
+
+
             if fontid != font_id:
+                if 1: #' ' in fontname:
+                    items.addHTML( '''<span style="font-family: '%s';">'''  % fontname )
+                else:
+                    items.addHTML( '''<span style="font-family: %s;">'''  % fontname )
+
+                # it looks like RTF needs a font dictionary... not now.
+                # items.addRTF( "\\fn%s " % (fontname,) )
+                rtfFontID = items.getFontID( fontname )
+                items.addRTF( "\\f%i " % (rtfFontID,) )
                 font_id = fontid
+                font_name = fontname
 
             if fontsize != font_size:
                 items.addHTML( '<span style="font-size: %ipt">'  % fontsize )
@@ -1228,7 +1300,7 @@ def convertWriteImage( vlir, folder, flags=(1,1), rtf=True, html=True, txt=True 
     log = []
     basename = vlir.dirEntry.fileName
     ic = ItemCollector()
-    ic.initDoc( basename )
+    # ic.initDoc( basename )
     chains = vlir.chains
 
     print repr(basename)
@@ -1322,7 +1394,7 @@ class CBMConvertFile(object):
         gigeosfiletype = ord( geoinfo[67] )
         gigeosfilestructure = ord( geoinfo[68] )
     
-        if 0: #kwlog:
+        if kwlog:
             print "icon width:", giwidth
             print "icon height:", giheight
             print "bitmap type", gibitmapType
@@ -1368,7 +1440,7 @@ class CBMConvertFile(object):
                 for i in range( 127 ):
                     a1 = ord( vlirheader[i * 2] )
                     a2 = ord( vlirheader[i * 2 + 1] )
-                    if 0: #kwlog:
+                    if kwlog:
                         print "<<<chain 0x%02x/0x%02x>>>" % ( a1, a2 )
         
                     # end of file
