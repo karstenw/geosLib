@@ -31,8 +31,9 @@ kwlog = 0
 #
 
 # unused and incomplete (yet)
+# intention is to use it with rtf & html conversion
 fontmapping = {
-    0: ('BSW', ''),
+    0: ('BSW', 'Geneva'),
     1: ('University', ''),
     2: ('California', ''),
     3: ('Roma', 'Times'),
@@ -101,7 +102,7 @@ filetypesWithAuthor = (
     1, 2, 4, 5, 6, 9, 10, 14, 15)
 
 programTypes = (
-    1,2,4,5,6,9,10,11,12,14,15)
+    1, 2, 4, 5, 6, 9, 10, 11, 12, 14, 15)
 
 dosFileTypes = {
     0: 'DEL',
@@ -112,12 +113,13 @@ dosFileTypes = {
     5: 'CBM'}
 
 
-fourtyEighty = {
+fourtyEightyFlags = {
     0:    "GEOS 64/128 40 columns",
     64:   "GEOS 64/128 40/80 columns",
     128:  "GEOS 64 40 columns",
     192:  "GEOS 128 80 columns"}
 
+# a lot of names are surrounded by this
 stripchars = ''.join( (chr(0),chr(0xa0)) )
 
 
@@ -206,7 +208,9 @@ bgcol = c64colors[15]
 if kwdbg:
     bgcol = c64colors[14]
 
+#
 # create color and bw "empty" image bands for the empty records in a geoPaint file
+#
 
 # color
 bytes = [ chr(bgcol[0]),chr(bgcol[1]),chr(bgcol[2]) ] * (640*16)
@@ -217,7 +221,6 @@ coldummy = PIL.Image.frombytes('RGB', (640,16), bytes, decoder_name='raw')
 bytes = [ chr(255) ] * 1280
 bytes = ''.join( bytes )
 bwdummy = PIL.Image.frombytes('1', (640,16), bytes, decoder_name='raw')
-
 
 
 # currently accepted GEOS file types for conversion
@@ -328,8 +331,8 @@ def getCompressedFile( path, acceptedOnly=False ):
     
     """
     result = {}
+
     # limit size of files to 10MB
-    
     # use a size limit?
     if 0: #s.st_size > 10*2**20:
         s = os.stat( path )
@@ -387,12 +390,20 @@ def getCompressedFile( path, acceptedOnly=False ):
 
 
 class ImageBuffer(list):
+    """For debugging purposes mostly. Has a built in memory dump in monitor format.
+    
+    
+    
+    """
     def __init__(self):
         super(ImageBuffer, self).__init__()
     def dump(self):
         hexdump( self )
-        
+
+
 def hexdump( s, col=32 ):
+    """Using this for debugging was so memory lane..."""
+
     cols = {
          8: ( 7, 0xfffffff8),
         16: (15, 0xfffffff0),
@@ -412,12 +423,15 @@ def hexdump( s, col=32 ):
         else:
             t = hex(ord(c))[2:]
         t = t.rjust(2, '0')
-        
+
+        # spit out address
         if i % col == 0:
             a = hex(i)[2:]
             a = a.rjust(4,'0')
             sys.stdout.write(a+':  ')
         sys.stdout.write(t+' ')
+
+        # spit out ascii line
         if i & minorMask == minorMask:
             offs = i & majorMask
             
@@ -437,12 +451,13 @@ def hexdump( s, col=32 ):
 
 
 
-
 #
 # geos image conversion
 #
 
 def expandImageStream( s ):
+    """Expand a 640x16 compressed image stream as encountered in geoPaint files."""
+
     n = len(s)
     j = -1
     image = ImageBuffer()
@@ -506,6 +521,8 @@ def expandImageStream( s ):
 
 
 def expandScrapStream( s ):
+    """Expand a variable compressed image stream as encountered in 'Photo Album',
+       'Photo Scrap' and geoWrite files."""
     n = len(s)
     j = -1
     image = []
@@ -558,26 +575,20 @@ def expandScrapStream( s ):
 
 
 def photoScrap( s ):
+    """Convert binary scrap format data into a BW and a COLOR PNG."""
+
+    # empty record
     if s in ( None, (0,255), (0,0)):
-        return
+        return False, False
     
-    # check for name list in Photo Album V2.1
-    cnt = ord(s[0])
-    n = len(s)
-    
-    # this is now handled in Album code
-    #if n == (((cnt + 1) * 17) + 1):
-    #    # skip it
-    #    hexdump(s)
-    #    return 0,0    
+    # 
     cardsw = ord(s[0])
     w = cardsw * 8
     h = ord(s[2]) * 256 + ord(s[1])
     cardsh = h >> 3
     image = expandScrapStream(s[3:])
     if image:
-        col, bw = imageband2PNG( image, cardsw, cardsh, 0 )
-        return col, bw
+        return imageband2PNG( image, cardsw, h, 0 )
     return False, False
 
 
@@ -587,16 +598,26 @@ def geoPaintBand( s ):
     cardsw = 80
     cardsh = 2
     image = expandImageStream(s)
-    col, bw = imageband2PNG( image, cardsw, cardsh, 1 )
+    col, bw = imageband2PNG( image, cardsw, cardsh*8, 1 )
     if kwdbg and 0:
         col.save("lastband_col.png")
         bw.save("lastband_bw.png")
     return col, bw
 
 
-def imageband2PNG( image, cardsw, cardsh, isGeoPaint):
+def imageband2PNG( image, cardsw, h, isGeoPaint):
+    """Convert a list of expanded image bytes into a PNG. Due to my misunderstanding
+    the formats, the last parameter was necessary. geoPaint and scrap format differ
+    huge in how the image is stored and this should have been handled in
+    expandXXXStream().
+    
+    See the 'if isGeoPaint:' part.
+    """
+    cardsh = h >> 3
+    if h & 7 != 0:
+        cardsh += 1
     w = cardsw * 8
-    h = cardsh * 8
+    # h = cardsh * 8
 
     eightZeroBytes = [0] * 8
 
@@ -608,8 +629,6 @@ def imageband2PNG( image, cardsw, cardsh, isGeoPaint):
     # holds a list of card colors; one list per row
     colorbands = []
     
-    # pdb.set_trace()
-
     # check sizes
     n = len(image)
     bitmapsize = cardsw * h
@@ -630,7 +649,7 @@ def imageband2PNG( image, cardsw, cardsh, isGeoPaint):
         image.extend( [0] * (bitmapsize - n) )
         
         # add gap
-        image.extend( [0] * 8 )
+        image.extend( eightZeroBytes )
         
         # add color map
         image.extend( [191] * colormapsize )
@@ -642,7 +661,7 @@ def imageband2PNG( image, cardsw, cardsh, isGeoPaint):
         if kwdbg:
             print "ONLY BITMAP BITS"
         # add gap
-        image.extend( [0] * 8 )
+        image.extend( eightZeroBytes )
         
         # add color map
         image.extend( [191] * colormapsize )
@@ -658,7 +677,7 @@ def imageband2PNG( image, cardsw, cardsh, isGeoPaint):
         c0 = image[bitmapsize:]
         image = []
         image.extend( i0 )
-        image.extend( [0] * 8 )
+        image.extend( eightZeroBytes )
         image.extend( c0 )
         n = len(image)
 
@@ -668,6 +687,8 @@ def imageband2PNG( image, cardsw, cardsh, isGeoPaint):
     else:
         # TBD
         # Here is still work todo
+        #
+        # It's difficult to estimate what's here and what's missing.
         if n > expectedSize:
             i0 = image[:bitmapsize]
             c0 = image[-colormapsize:]
@@ -680,13 +701,15 @@ def imageband2PNG( image, cardsw, cardsh, isGeoPaint):
             image.extend( c0 )
             n = len(image)
         else:
-            if kwdbg:
+            if kwlog:
                 print  
                 print  "UNUSUAL SIZE!!"
-                print cardsw, cardsh
-                print cardsw * cardsh
-                print n
-                print expectedSize
+                print "cardsw, cardsh", cardsw, cardsh
+                print "cardsw * cardsh", cardsw * cardsh
+                print "n", n
+                print "expectedSize", expectedSize
+                if kwdbg:
+                    pdb.set_trace()
                 print
 
     # extract color data
@@ -701,10 +724,10 @@ def imageband2PNG( image, cardsw, cardsh, isGeoPaint):
             band.extend( [191] * (cardsw -len(band)) )
         colorbands.append( band )
 
-    
+    # bring the image bytes into the right order
     if isGeoPaint:
-        bytes = [ chr(0) ] * noofbytes
         # this is only for geoPaint files
+        bytes = [ chr(0) ] * noofbytes
         ROWS = cardsh
         COLS = cardsw
         BYTESPERCARD = 8
@@ -1001,6 +1024,7 @@ def getGeoWriteStream(items, chain, chains, log, flags):
                     j += 4
                     continue
                 try:
+                    # pdb.set_trace()
                     image, bwimg = photoScrap( chains[chainindex] )
                 except Exception, err:
                     j += 4
@@ -1016,7 +1040,8 @@ def getGeoWriteStream(items, chain, chains, log, flags):
                 items.addRTF( rtfs % (imagename, width, height) )
                 items.addHTML( '<img src="%s" />' % (imagename,) )
                 items.addTEXT( "\n\nIMAGEFILE(%i, %i, %s)\n\n" % (width, height, imagename) )
-                items.addImage( imagename, width, height, image )
+                # items.addImage( imagename, width, height, image )
+                items.addImage( imagename, width, height, bwimg )
 
             else:
                 pdb.set_trace()
@@ -1441,7 +1466,7 @@ class GEOSHeaderBlock(object):
         # self.classNameRAW = s[75:95]
         self.className = cleanupString(s[75:91])
         
-        self.fourtyEighty = fourtyEighty.get(ord(s[94]), "")
+        self.fourtyEightyFlags = fourtyEightyFlags.get(ord(s[94]), "")
         
         authorOrParentDisk = cleanupString( s[95:115] )
         self.author = self.parentDisk = ""
@@ -1500,7 +1525,7 @@ class GEOSHeaderBlock(object):
         else:
             print "GEOS Parent Disk:", repr(self.parentDisk)
         print "GEOS Creator Name:", repr(self.creator)
-        print "GEOS 40/80:", self.fourtyEighty
+        print "GEOS 40/80:", self.fourtyEightyFlags
         print "GEOS Load Address:", hex(self.loadAddress)
         print "GEOS End Address:", hex(self.endOfLoadAddress)
         print "GEOS Exe Address:", hex(self.startAddress)
@@ -1517,28 +1542,32 @@ class GEOSHeaderBlock(object):
 
 
 class GEOSDirEntry(object):
-    def __init__(self, s, isGeos=True):
+    """A Commodore directory entry with additional GEOS attributes.
     
-        if len(s) == 32:
-            s = s[2:]
+    
+    """
+    def __init__(self, dirEntryBytes, isGeos=True):
+    
+        if len(dirEntryBytes) == 32:
+            dirEntryBytes = dirEntryBytes[2:]
         
-        self.dosFileTypeRAW = s[0]
+        self.dosFileTypeRAW = dirEntryBytes[0]
         self.fileOK = (ord(self.dosFileTypeRAW) & 128) > 0
         self.fileProtected = (ord(self.dosFileTypeRAW) & 64) > 0
         t = ord(self.dosFileTypeRAW) & 7
 
         self.fileType = dosFileTypes.get(t, "???")
-        self.trackSector = (ord(s[1]), ord(s[2]))
-        self.fileName = s[0x03:0x13]
+        self.trackSector = (ord(dirEntryBytes[1]), ord(dirEntryBytes[2]))
+        self.fileName = dirEntryBytes[0x03:0x13]
         self.fileName = self.fileName.rstrip(stripchars)
         
         self.geosHeaderTrackSector = (0,0)
-        self.fileSizeBlocks = ord(s[0x1c]) + ord(s[0x1d]) * 256
+        self.fileSizeBlocks = ord(dirEntryBytes[0x1c]) + ord(dirEntryBytes[0x1d]) * 256
 
         # if not geos, this is REL side sector
-        self.geosHeaderTrackSector = (ord(s[19]), ord(s[20]))
+        self.geosHeaderTrackSector = (ord(dirEntryBytes[19]), ord(dirEntryBytes[20]))
         # if not geos, this is REL record size
-        self.geosFileStructure = ord(s[21])
+        self.geosFileStructure = ord(dirEntryBytes[21])
         self.geosFileStructureString = ""
         self.geosFileTypeString = ""
         self.modfDate = "NO MODF DATE"
@@ -1552,11 +1581,11 @@ class GEOSDirEntry(object):
                 self.geosFileStructureString = "VLIR"
                 self.isGEOSFile = True
 
-            self.geosFileType = ord(s[22])
+            self.geosFileType = ord(dirEntryBytes[22])
             #self.geosFileTypeString = geosFileTypes[self.geosFileType]
             self.geosFileTypeString = geosFileTypes.get(self.geosFileType, "UNKNOWN GEOS filetype:%i" % self.geosFileType)
 
-            self.modfDateRAW = s[0x17:0x1c]
+            self.modfDateRAW = dirEntryBytes[0x17:0x1c]
             dates = [ord(i) for i in self.modfDateRAW]
             y,m,d,h,mi = dates
             if 85 <= y <= 99:
