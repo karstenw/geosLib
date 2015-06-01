@@ -25,6 +25,9 @@ python convertCVTFiles.py *.cvt
 
 + Some differences between "Write Image V2.0" and "Write Image V2.1"
 
++ geoPublish format? If someone has a pointer please write up an issue.
+
+
 # Summary
 
 + Send CBM CVT files to CBMConvertFile and  DiskImages to DiskImage. Look at geosFiletypeScanner's usage of geosLib.getCompressedFile() on how to handle gzip and zip files.
