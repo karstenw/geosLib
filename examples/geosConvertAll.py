@@ -18,6 +18,9 @@ import pprint
 pp = pprint.pprint
 
 import geosLib
+geosLib.kwdbg = kwdbg
+geosLib.kwdbg = kwdbg
+
 GEOSDirEntry = geosLib.GEOSDirEntry
 GEOSHeaderBlock = geosLib.GEOSHeaderBlock
 VLIRFile = geosLib.VLIRFile
@@ -39,6 +42,10 @@ makeunicode = geosLib.makeunicode
 iterateFolders = geosLib.iterateFolders
 getCompressedFile = geosLib.getCompressedFile
 
+convertFontFile = geosLib.convertFontFile
+
+exportFolder = os.path.abspath("./geosExports")
+fontExportFolder = os.path.abspath("./geosFonts")
 
 
 if __name__ == '__main__':
@@ -57,15 +64,12 @@ if __name__ == '__main__':
 
     for f in sys.argv[1:]:
 
-        # pdb.set_trace()
-
         f = os.path.abspath(os.path.expanduser(f))
         folder, filename = os.path.split( f )
         basename, ext = os.path.splitext( filename )
         dummy, parentFolder = os.path.split( folder )
 
-        basefolder = os.path.abspath(os.path.expanduser("./geosExports"))
-        basefolder = os.path.join( basefolder, parentFolder )
+        basefolder = os.path.join( exportFolder, parentFolder )
 
         print "\n\n\n"
         print "#" * 120
@@ -115,6 +119,10 @@ if __name__ == '__main__':
             for item in result:
                 for fld in item:
                     for cbmfile in item[fld]:
+                        if kwdbg:
+                            print cbmfile.dirEntry.fileName
+                            pdb.set_trace()
+                            print
                         try:
                             gde = cbmfile.dirEntry
                         except AttributeError, err:
@@ -129,26 +137,30 @@ if __name__ == '__main__':
                         if gde.isGEOSFile:
                             gfh = cbmfile.header
                             target = os.path.join( basefolder, fld)
-                            if not os.path.exists( target ):
-                                os.makedirs( target) 
+                            target = basefolder
+
+                            done = False
+
                             if gfh.className.startswith("Paint Image V"):
-                                if kwdbg:
-                                    gfh.prnt()
-                                    print '-' * 80
-                                # pdb.set_trace()
                                 convertGeoPaintFile( cbmfile, target )
+                                done = True
                             elif gfh.className.startswith("photo album V"):
-                                if kwdbg:
-                                    gfh.prnt()
-                                    print '-' * 80
                                 convertPhotoAlbumFile( cbmfile, target )
+                                done = True
                             elif gfh.className.startswith("Photo Scrap V"):
-                                if kwdbg:
-                                    gfh.prnt()
-                                    print '-' * 80
                                 convertPhotoScrapFile( cbmfile, target )
+                                done = True
                             elif gfh.className in textTypes:
-                                if kwdbg:
-                                    gfh.prnt()
-                                    print '-' * 80
                                 convertWriteImage( cbmfile, target )
+                                done = True
+
+                            elif gfh.geosFileType == 8:
+                                # font file
+                                # ATTENTION: exports all in one folder!
+                                convertFontFile(cbmfile, fontExportFolder)
+                                done = True
+
+                            if done and kwlog:
+                                gde.prnt()
+                                gfh.prnt()
+                                print '-' * 80

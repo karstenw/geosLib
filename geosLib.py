@@ -24,7 +24,7 @@ import pdb
 kwdbg = 0
 kwlog = 0
 
-
+import time
 
 #
 # constants
@@ -272,6 +272,16 @@ imageTypes = (
     'Photo Scrap V1.0',
     'Photo Scrap V1.1')
 
+geoWriteVersions = {
+    'Write Image V1.0': 10,
+    'Write Image V1.1': 11,
+    'Write Image V2.0': 20,
+    'Write Image V2.1': 21
+}
+
+albumWithNameTypes = (
+    'photo album V2.1',
+    'text album  V2.1')
 
 #
 # tools
@@ -304,6 +314,7 @@ def iterateFolders( infolder, validExtensions=('.d64', '.d71', '.d81', '.zip', '
     """Iterator that walks a folder and returns all files."""
     
     # for folder in dirs:
+    lastfolder = ""
     for root, dirs, files in os.walk( infolder ):
         root = makeunicode( root )
         result = {}
@@ -321,7 +332,15 @@ def iterateFolders( infolder, validExtensions=('.d64', '.d71', '.d81', '.zip', '
                 continue
             
             filepath = os.path.join( root, thefile )
+            dummy, folder = os.path.split( root )
+            if 0:
+                if root != lastfolder:
+                    lastfolder = root
+                    print
+                    print "FOLDER:", repr( root )
             filepath = makeunicode( filepath )
+            if 1: #kwlog:
+                print "FILE:", repr(filepath)
             yield typ, filepath
 
 
@@ -341,7 +360,7 @@ def getCompressedFile( path, acceptedOnly=False ):
     folder, filename = os.path.split( path )
     basename, ext = os.path.splitext( filename )
 
-    if ext == '.gz':
+    if ext.lower() == '.gz':
         f = gzip.open(path, 'rb')
         foldername = basename + '_gz'
         result[foldername] = []
@@ -357,7 +376,7 @@ def getCompressedFile( path, acceptedOnly=False ):
             else:
                 result[foldername].extend(di.files)
             return result
-    elif ext == '.zip':
+    elif ext.lower() == '.zip':
         foldername = basename + '_zip'
         try:
             handle = zipfile.ZipFile(path, 'r')
@@ -386,7 +405,6 @@ def getCompressedFile( path, acceptedOnly=False ):
                     result[zfoldername].extend( di.files )
         return result
     return result
-
 
 
 class ImageBuffer(list):
@@ -443,6 +461,40 @@ def hexdump( s, col=32 ):
                 else:
                     sys.stdout.write( '.' )
             sys.stdout.write('\n')
+
+
+def getAlbumNamesChain( vlir ):
+    """extract clip names for (Photo|Text) Album V2.x"""
+    clipnames = [ "" ] * 127
+    clipnameschain = 256
+    if vlir.header.className in ("photo album V2.1", "text album  V2.1"):
+        # scan for last chain
+        if (0,0) in vlir.chains:
+            clipnameschain = vlir.chains.index( (0,0) ) - 1
+            clipnamesstream = vlir.chains[clipnameschain]
+            noofentries = ord(clipnamesstream[0])
+            if len(clipnamesstream) != (noofentries + 1) * 17 + 1:
+                if kwlog:
+                    print "len(clipnamesstream)", len(clipnamesstream)
+                    print "(noofentries + 1) * 17 + 1", (noofentries + 1) * 17 + 1
+                    if kwdbg:
+                        pdb.set_trace()
+                        print
+                return 256, clipnames
+            for i in range(noofentries):
+                base = 1 + i*17
+                namebytes = clipnamesstream[base:base+16]
+                namebytes = namebytes.replace( chr(0x00), "" )
+                namebytes = namebytes.replace( '/', "-" )
+                namebytes = namebytes.replace( ':', "_" )
+                try:
+                    clipnames[i] = namebytes
+                except IndexError, err:
+                    print
+                    print err
+                    pdb.set_trace()
+                    print
+    return clipnameschain, clipnames
 
 
 #
@@ -580,11 +632,16 @@ def photoScrap( s ):
     # empty record
     if s in ( None, (0,255), (0,0)):
         return False, False
-    
-    # 
+
     cardsw = ord(s[0])
     w = cardsw * 8
     h = ord(s[2]) * 256 + ord(s[1])
+
+    if w == 0 or h == 0:
+        return False, False
+    elif w > 4096 or h > 4096:
+        return False, False
+
     cardsh = h >> 3
     image = expandScrapStream(s[3:])
     if image:
@@ -840,6 +897,8 @@ def convertGeoPaintFile( vlir, folder ):
             bw = bwdummy.copy()
         bwimg.paste( bw, (0,i*16,640,(i+1)*16))
 
+    if not os.path.exists( folder ):
+        os.makedirs( folder )
     outfilecol = os.path.join( folder, outnamebase + "_col.png" )
     outfilebw = os.path.join( folder, outnamebase + "_bw.png" )
     colimg.save(outfilecol)
@@ -854,27 +913,17 @@ def convertPhotoAlbumFile( vlir, folder ):
     # folder = gpf.folder
     print repr(outnamebase)
 
-    # extract clip names for Photo Album V2.1
+    classname = vlir.header.className
+
+    clipnameschain = -1
     clipnames = [ "" ] * 127
-    clipnameschain = 256
-    if vlir.header.className == "photo album V2.1":
-        # scan for last chain
-        if (0,0) in vlir.chains:
-            clipnameschain = vlir.chains.index( (0,0) ) - 1
-            clipnamesstream = vlir.chains[clipnameschain]
-            noofentries = ord(clipnamesstream[0])
-            for i in range(noofentries):
-                base = 1 + i*17
-                namebytes = clipnamesstream[base:base+16]
-                namebytes = namebytes.replace( chr(0x00), "" )
-                namebytes = namebytes.replace( '/', "-" )
-                namebytes = namebytes.replace( ':', "_" )
-                clipnames[i] = namebytes
-    
+    if classname in albumWithNameTypes:
+        clipnameschain, clipnames = getAlbumNamesChain( vlir )
+
     for i,chain in enumerate(vlir.chains):
         if chain in ((0,0), (0,255), None, False):
             continue
-        if i == clipnameschain:
+        if classname in albumWithNameTypes and i == clipnameschain:
             # names record
             continue
 
@@ -884,14 +933,20 @@ def convertPhotoAlbumFile( vlir, folder ):
         if clipnames[i]:
             clipname = '-"' + clipnames[i] + '"'
         if col:
-            suf = '-' + str(i+1).rjust(3,'0') + clipname + "_col.png"
-            of = os.path.join( folder, outnamebase + suf )
+            if not os.path.exists( folder ):
+                os.makedirs( folder )
+            filename = outnamebase + '-' + str(i+1).rjust(3,'0') + clipname + "_col.png"
+            filename = filename.replace('/', '_')
+            of = os.path.join( folder, filename )
             col.save( of )
         else:
             print "No color image for vlir: %i" % i
         if bw:
-            suf = '-' + str(i+1).rjust(3,'0') + clipname + "_bw.png"
-            of = os.path.join( folder, outnamebase + suf )
+            if not os.path.exists( folder ):
+                os.makedirs( folder )
+            filename = outnamebase + '-' + str(i+1).rjust(3,'0') + clipname + "_bw.png"
+            filename = filename.replace('/', '_')
+            of = os.path.join( folder, filename )
             bw.save( of )
         else:
             print "No bw image for vlir: %i" % i
@@ -915,10 +970,14 @@ def convertPhotoScrapFile( vlir, folder):
         col, bw = photoScrap( chain )
 
         if col:
+            if not os.path.exists( folder ):
+                os.makedirs( folder )
             suf = '-' + str(i+1).rjust(3,'0') + "_col.png"
             of = os.path.join( folder, outnamebase + suf )
             col.save( of )
         if bw:
+            if not os.path.exists( folder ):
+                os.makedirs( folder )
             suf = '-' + str(i+1).rjust(3,'0') + "_bw.png"
             of = os.path.join( folder, outnamebase + suf )
             bw.save( of )
@@ -1007,11 +1066,10 @@ class ItemCollector(object):
             items.append( sitem % (key, v) )
         items.append( send )
         return ''.join( items )
-        # s = "\f0\fnil\fcharset0 Democratika;\f1\fnil\fcharset0 DesignerBlock;\f2\fswiss\fcharset0 Helvetica;}"
 
 
 # make this work on VLIRFile + index
-def getGeoWriteStream(items, chain, chains, log, flags=(0,0)):
+def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
     """Decode a geoWrite Stream; usually a page of a document.
     
     IN: items   - collector for RTF, HTML and TXT snippets
@@ -1074,17 +1132,20 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0)):
             height = heightH * 256 + heightL
             chainindex = ord(chain[j+4])
 
+            if writeVersion in (10,11,20):
+                if kwdbg:
+                    pdb.set_trace()
+                chainindex += 1
             if 63 <= chainindex <= 127:
                 if not chains:
                     j += 4
                     continue
                 try:
-                    # pdb.set_trace()
                     image, bwimg = photoScrap( chains[chainindex] )
                 except Exception, err:
                     j += 4
                     continue
-                    
+
                 if not (width and height and image):
                     j += 4
                     continue
@@ -1096,7 +1157,7 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0)):
                 items.addHTML( '<img src="%s" />' % (imagename,) )
                 items.addTEXT( "\n\nIMAGEFILE(%i, %i, %s)\n\n" % (width, height, imagename) )
                 # items.addImage( imagename, width, height, image )
-                items.addImage( imagename, width, height, bwimg )
+                items.addImage( imagename, width, height, image )
 
             else:
                 pdb.set_trace()
@@ -1299,6 +1360,17 @@ def convertWriteImage( vlir, folder, flags=(1,1), rtf=True, html=True, txt=True 
     # prepare
     log = []
     basename = vlir.dirEntry.fileName
+    writeversion = 21
+    try:
+        writeImageVersion = vlir.header.className
+        writeversion = geoWriteVersions.get(writeImageVersion, 21)
+    except Exception, err:
+        # should trap on scrap & albums
+        print err
+        if kwlog:
+            pdb.set_trace()
+        print
+
     ic = ItemCollector()
     # ic.initDoc( basename )
     chains = vlir.chains
@@ -1314,7 +1386,7 @@ def convertWriteImage( vlir, folder, flags=(1,1), rtf=True, html=True, txt=True 
         if idx >= 61:
             break
 
-        ic, log = getGeoWriteStream(ic, chain, chains, log, flags)
+        ic, log = getGeoWriteStream(ic, chain, chains, log, flags, writeversion)
 
     # finish doc
     ic.finishDoc()
@@ -1405,7 +1477,9 @@ class CBMConvertFile(object):
         v = VLIRFile()
         v.header = self.geosHeaderBlock
         v.dirEntry = self.geosDirEntry
+        v.filepath = infile
         self.vlir = v
+
         geofiletype = ord(data[21])
 
         formatOK = False
@@ -1486,6 +1560,8 @@ class VLIRFile(object):
         # for saving
         self.folder = ""
         self.filename = ""
+        # origin
+        self.filepath = ""
 
 def cleanupString( s ):
     # remove garbage
@@ -1520,7 +1596,9 @@ class GEOSHeaderBlock(object):
 
         # ok up to here
         self.geosFileType = ord(s[67])
-        self.geosFileTypeString = geosFileTypes.get(self.geosFileType, "UNKNOWN GEOS filetype:%i" % self.geosFileType)
+        self.geosFileTypeString = geosFileTypes.get(
+                    self.geosFileType,
+                    "UNKNOWN GEOS filetype:%i" % self.geosFileType)
 
         # ok up to here
         self.geosFileStructure = ord(s[68])
@@ -1541,13 +1619,20 @@ class GEOSHeaderBlock(object):
         self.fourtyEightyFlags = fourtyEightyFlags.get(ord(s[94]), "")
         
         authorOrParentDisk = cleanupString( s[95:115] )
-        self.author = self.parentDisk = ""
+        creator = cleanupString( s[115:135] )
+
+        self.author = self.parentDisk = self.creator = ""
+
         if self.geosFileType in filetypesWithAuthor:
             self.author = authorOrParentDisk
+            self.creator = creator
+        elif self.geosFileType == 8:
+            # it's a font file. no parent, no author
+            pass
         else:
             self.parentDisk = authorOrParentDisk
+            self.creator = creator
 
-        self.creator = cleanupString( s[115:135] )
         
         self.applicationData = s[135:157]
 
@@ -1555,7 +1640,12 @@ class GEOSHeaderBlock(object):
         self.firstPagenumber = 1
         self.NLQPrint = self.titlePage = False
         self.headerHeight = self.footerHeight = self.pageHeight = 0
+        self.fontID = -1
+        self.fontPointSizes = []
+        self.fontByteSizes = []
+        
         if self.className.startswith( "Write Image V" ):
+            # it's a geowrite file
             self.firstPagenumber = ord(s[0x87]) + ord(s[0x88]) * 256
             
             self.NLQPrint = (ord(s[0x89]) & 64) > 0
@@ -1563,6 +1653,28 @@ class GEOSHeaderBlock(object):
             self.headerHeight = ord(s[0x8a]) + ord(s[0x8b]) * 256
             self.footerHeight = ord(s[0x8c]) + ord(s[0x8d]) * 256
             self.pageHeight = ord(s[0x8e]) + ord(s[0x8f]) * 256
+
+        elif self.geosFileType == 8:
+            # it's a font file
+            self.fontID = ord(s[0x7e]) + ord(s[0x7f]) * 256
+
+            for i in range(16):
+                # get point size
+                base = 0x80 + i * 2
+                t = ord( s[base] ) + ord(s[base+1]) * 256
+                t1 = t & 0xffc0
+                t1 >>= 6
+                if t1 != self.fontID:
+                    break
+                t2 = t & 0x003f
+                self.fontPointSizes.append( t2 )
+
+                # get byte size
+                base = 0x5f + i * 2
+                t = ord( s[base] ) + ord(s[base+1]) * 256
+                if t != 0:
+                    self.fontByteSizes.append( t )
+
         self.desktopNote = cleanupString(s[158:])
 
     def prnt(self):
@@ -1608,9 +1720,13 @@ class GEOSHeaderBlock(object):
             print "geoWrite header height:", self.headerHeight
             print "geoWrite footer height:", self.footerHeight
             print "geoWrite page height:", self.pageHeight
+        elif self.geosFileType == 8:
+            print "Font ID:", self.fontID
+            s = [str(t) for t in self.fontPointSizes]
+            print "Font point sizes:", ', '.join(s)
+            s = [str(t) for t in self.fontByteSizes]
+            print "Font byte sizes:", ', '.join(s)
         print "GEOS DeskTop Comment:", repr(self.desktopNote)
-
-
 
 
 class GEOSDirEntry(object):
@@ -1622,7 +1738,10 @@ class GEOSDirEntry(object):
     
         if len(dirEntryBytes) == 32:
             dirEntryBytes = dirEntryBytes[2:]
-        
+
+        # save it for CVT file export
+        self.dirEntryBytes = dirEntryBytes
+
         self.dosFileTypeRAW = dirEntryBytes[0]
         self.fileOK = (ord(self.dosFileTypeRAW) & 128) > 0
         self.fileProtected = (ord(self.dosFileTypeRAW) & 64) > 0
@@ -1655,7 +1774,8 @@ class GEOSDirEntry(object):
 
             self.geosFileType = ord(dirEntryBytes[22])
             #self.geosFileTypeString = geosFileTypes[self.geosFileType]
-            self.geosFileTypeString = geosFileTypes.get(self.geosFileType, "UNKNOWN GEOS filetype:%i" % self.geosFileType)
+            self.geosFileTypeString = geosFileTypes.get(self.geosFileType,
+                                    "UNKNOWN GEOS filetype:%i" % self.geosFileType)
 
             self.modfDateRAW = dirEntryBytes[0x17:0x1c]
             dates = [ord(i) for i in self.modfDateRAW]
@@ -1685,7 +1805,9 @@ class GEOSDirEntry(object):
         print "GEOS Total Block Size:", self.fileSizeBlocks
         print 
     def smallprnt(self):
-        print repr(self.fileName).ljust(20), str(self.fileSizeBlocks).rjust(5), repr(self.fileType)
+        print (repr(self.fileName).ljust(20),
+               str(self.fileSizeBlocks).rjust(5),
+               repr(self.fileType))
 
 
 class DiskImage(object):
@@ -1932,3 +2054,131 @@ class DiskImage(object):
                 self.printDirectory()
 
 
+# UNUSED
+class FontRecord(object):
+    def __init__(self, s, name, vlirIndex):
+        self.baselineOffset = ord(s[0])
+        self.bitstreamRowLength = ord(s[1]) + ord(s[2]) * 256
+        self.fontHeight = ord(s[3])
+        self.indextableOffset = ord(s[4]) + ord(s[5]) * 256
+        self.bitstreamOffset = ord(s[6]) + ord(s[7]) * 256
+
+        self.indexTableSize = self.bitstreamOffset - self.indextableOffset
+        
+        self.indexTable = s[self.indextableOffset:self.indextableOffset+self.indexTableSize]
+
+        self.bitstreamTable = s[self.bitstreamOffset:]
+
+        self.bitstreamTableSize = self.fontHeight * self.bitstreamRowLength
+    
+    # def 
+
+def getFontChain( name, s, chainIndex ):
+    """Parse a font."""
+    
+    # font header
+    #
+    #  0 - baseline offset
+    #  1 - bitstream width
+    #  3 - font height
+    #  4 - rel pointer to index table
+    #  6 - rel pointer to character
+    
+    baselineOffset = ord(s[0])
+    bitstreamRowLength = ord(s[1]) + ord(s[2]) * 256
+    fontHeight = ord(s[3])
+    indextableOffset = ord(s[4]) + ord(s[5]) * 256
+    bitstreamOffset = ord(s[6]) + ord(s[7]) * 256
+
+    indexTableSize = bitstreamOffset - indextableOffset
+
+    indexTable = s[indextableOffset:indextableOffset+indexTableSize]
+    
+    bitstreamTable = s[bitstreamOffset:]
+
+    bitstreamTableSize = fontHeight * bitstreamRowLength
+    
+    if len(bitstreamTable) == 0:
+        return False, False
+
+    if len(bitstreamTable) != bitstreamTableSize:
+        print "SIZE MISMATCH:"
+        print "Name:", name
+        print "bitstreamTableSize", bitstreamTableSize
+        print "len(bitstreamTable)", len(bitstreamTable)
+        if kwdbg:
+            time.sleep(2)
+        print
+
+    image = []
+    idx = 0
+    for y in range( fontHeight ):
+        for x in range( bitstreamRowLength ):
+            idx = y * bitstreamRowLength + x
+            if idx >= len(bitstreamTable):
+                if kwdbg:
+                    pdb.set_trace()
+                if kwlog:
+                    print "chainIndex:", chainIndex
+                    print "baselineOffset:", baselineOffset
+                    print "bitstreamRowLength:", bitstreamRowLength
+                    print "fontHeight:", fontHeight
+                    print "indextableOffset:", indextableOffset
+                    print "bitstreamOffset:", bitstreamOffset
+                    print "indexTableSize:", indexTableSize
+                val = 0
+            else:
+                val = ord( bitstreamTable[idx])
+            image.append( val )
+        # print 
+    col, bw = imageband2PNG( image, bitstreamRowLength, fontHeight, 0 )
+    # pdb.set_trace()
+    if False:
+        # resize the image
+        h, w = bw.size
+        h *= 2
+        w *= 2
+        bw = bw.resize( (h,w), PIL.Image.NEAREST )
+    return col, bw
+
+
+def convertFontFile(geosfile, folder):
+    gdh = geosfile.header
+    gde = geosfile.dirEntry
+
+    if gdh.geosFileType != 8:
+        print "IGNORED:", repr( infile )
+        return
+
+    if kwdbg:
+        print '-' * 20
+        print gde.fileName
+        print gdh.className
+
+    if kwlog:
+        gdh.prnt()
+
+    chains = geosfile.chains
+
+    for idx, chain in enumerate(chains):
+
+        if chain in ((0,0), (0,255), None, False):
+            continue
+
+        if type(chain) in (tuple, list):
+            continue
+
+        if chain == "":
+            continue
+
+        col, bw = getFontChain( gde.fileName, chain, idx )
+
+        if col and bw:
+            fname = "%s (vlir %i).png" % (gde.fileName, idx-1)
+            if '/' in fname:
+                fname = fname.replace('/', ':')
+            path = os.path.join( folder, fname)
+            if not os.path.exists( folder ):
+                os.makedirs( folder )
+            if not os.path.exists( path ):
+                bw.save( path )

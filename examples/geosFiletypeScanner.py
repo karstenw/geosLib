@@ -18,6 +18,9 @@ import pprint
 pp = pprint.pprint
 
 import geosLib
+geosLib.kwdbg = kwdbg
+geosLib.kwlog = kwlog
+
 GEOSDirEntry = geosLib.GEOSDirEntry
 GEOSHeaderBlock = geosLib.GEOSHeaderBlock
 VLIRFile = geosLib.VLIRFile
@@ -70,14 +73,18 @@ if __name__ == '__main__':
 
         for typ, path in files:
 
+            if kwdbg:
+                pdb.set_trace()
+
             result = []
             if typ in ('.gz', '.zip'):
                 # perhaps compressed image
                 data = getCompressedFile(path)
                 if data:
                     compressedImages += 1
-                    for item in data:
-                        result.append( item )
+                    for p in data:
+                        for item in data[p]:
+                            result.append( item )
 
             elif typ == '.cvt':
                 # pdb.set_trace()
@@ -104,9 +111,12 @@ if __name__ == '__main__':
                 try:
                     gde = cbmfile.dirEntry
                 except AttributeError, err:
-                    print err
-                    pdb.set_trace()
-                    print 
+                    if kwlog:
+                        print err
+                    if kwdbg:
+                        pdb.set_trace()
+                        print 
+                    continue
 
                 # print directory entry
                 gde.smallprnt()
