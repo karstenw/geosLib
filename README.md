@@ -6,6 +6,7 @@ Image files can be converted to PNG.
 
 Text formats can be converted to RTFD, HTML ans TXT.
 
+GEOS font files are rendered as PNG for each size.
 
 # Requisites
 
