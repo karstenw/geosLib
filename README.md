@@ -40,9 +40,9 @@ python convertCVTFiles.py *.cvt
 + Welcome the new addition macpaintLib.py. For the start it will be kept in it's own file but will be integrated after maturing. It uses a lot of common code and is very beta.
 + Currently it converts all but one from all the macpaint files I could find on the net.
   + sources so far;
-    + http://cd.textfiles.com/carousel344/PIC
-    + http://cd.textfiles.com/vgaspectrum/mac/mac1
-    + http://cd.textfiles.com/vgaspectrum/mac/mac2
+    + [http://cd.textfiles.com/carousel344/PIC](http://cd.textfiles.com/carousel344/PIC)
+    + [http://cd.textfiles.com/vgaspectrum/mac/mac1](http://cd.textfiles.com/vgaspectrum/mac/mac1)
+    + [http://cd.textfiles.com/vgaspectrum/mac/mac2](http://cd.textfiles.com/vgaspectrum/mac/mac2)
   + If you find more macpaint files, please create an issue
 
 + Usage
