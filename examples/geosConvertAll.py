@@ -73,10 +73,11 @@ if __name__ == '__main__':
 
         print "\n\n\n"
         print "#" * 120
+        print 
         print "SOURCE:", repr(f)
-        print "#" * 120
+        print "-" * 120
+        print
 
-        
         if os.path.isdir(f):
             files = iterateFolders( f )
         else:
@@ -110,18 +111,23 @@ if __name__ == '__main__':
                 n = basename + typ.replace('.', '_')
                 d = {n: []}
                 for u in data.files:
-                    if u.header and u.header.className in acceptedTypes:
-                        d[n].append( u )
+                    if u.header:
+                        if u.header.className in acceptedTypes:
+                            d[n].append( u )
+                        elif u.dirEntry.geosFileType == 8:
+                            d[n].append( u )
                 result.append( d )
             else:
+                # check for cvt without extension here
+                # check sda, arc, ark...
                 pass
 
             for item in result:
                 for fld in item:
                     for cbmfile in item[fld]:
-                        if kwdbg:
+                        if kwdbg or 1:
                             print cbmfile.dirEntry.fileName
-                            pdb.set_trace()
+                            # pdb.set_trace()
                             print
                         try:
                             gde = cbmfile.dirEntry
