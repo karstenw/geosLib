@@ -358,9 +358,10 @@ if __name__ == '__main__':
         folder, filename = os.path.split( path )
         basename, ext = os.path.splitext( filename )
         
-        dest = os.path.join( "macpaintExports/", basename + ".png")
+        dest = "macpaintExports/"
         if not os.path.exists( dest ):
             os.makedirs( dest )
+        dest = os.path.join( dest, basename + ".png")
 
         if s.startswith( (chr(0),chr(0),chr(0),chr(2)) ):
             s = s[640:]
