@@ -34,3 +34,23 @@ python convertCVTFiles.py *.cvt
 + Send CBM CVT files to CBMConvertFile and  DiskImages to DiskImage. Look at geosFiletypeScanner's usage of geosLib.getCompressedFile() on how to handle gzip and zip files.
 
 + IOW: get your geos file into a VLIRFile structure. The name is misleading since SEQ files go there too. That's what any of the conversion functions in geosLib expect.
+
+# Update
+
++ Welcome the new addition macpaintLib.py. For the start it will be kept in it's own file but will be integrated after maturing. It uses a lot of common code and is very beta.
++ Currently it converts all but one from all the macpaint files I could find on the net.
+  + sources so far;
+    + http://cd.textfiles.com/carousel344/PIC
+    + http://cd.textfiles.com/vgaspectrum/mac/mac1
+    + http://cd.textfiles.com/vgaspectrum/mac/mac2
+  + If you find more macpaint files, please create an issue
+
++ Usage
+
+```
+
+python macpaintLib.py /Path/To/Folder/with/MacPaint/Files/
+
+```
+
+this will create a folder macpaintExports at the same location from where the script is started.
