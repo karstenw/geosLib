@@ -4,7 +4,7 @@ geosLib is a Python library to convert [GEOS](https://www.c64-wiki.de/index.php/
 
 Image files can be converted to PNG.
 
-Text formats can be converted to RTFD, HTML ans TXT.
+Text formats can be converted to RTFD, HTML and TXT.
 
 GEOS font files are rendered as PNG for each size.
 
