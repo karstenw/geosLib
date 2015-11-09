@@ -466,9 +466,9 @@ def getAlbumNamesChain( vlir ):
                 if kwlog:
                     print "len(clipnamesstream)", len(clipnamesstream)
                     print "(noofentries + 1) * 17 + 1", (noofentries + 1) * 17 + 1
-                    if kwdbg:
-                        pdb.set_trace()
-                        print
+                    #if kwdbg:
+                    #    pdb.set_trace()
+                    #    print
                 return 256, clipnames
             for i in range(noofentries):
                 base = 1 + i*17
@@ -481,7 +481,7 @@ def getAlbumNamesChain( vlir ):
                 except IndexError, err:
                     print
                     print err
-                    pdb.set_trace()
+                    # pdb.set_trace()
                     print
     return clipnameschain, clipnames
 
@@ -511,7 +511,7 @@ def expandImageStream( s ):
         if code in (64, 128):
             if kwdbg:
                 print "blank code 64,128 encountered."
-                pdb.set_trace()
+                #pdb.set_trace()
             continue
 
         if code < 64:
@@ -571,7 +571,7 @@ def expandScrapStream( s ):
         if code in (0,128,220):
             if kwdbg:
                 print "ILLEGAL OPCODES..."
-                pdb.set_trace()
+                # pdb.set_trace()
                 print
             continue
         elif code < 128:
@@ -685,7 +685,7 @@ def imageband2PNG( image, cardsw, h, isGeoPaint):
         # fill with 0
         # one colored image
         if kwdbg:
-            pdb.set_trace()
+            #pdb.set_trace()
             print "BITMAP BITS MISSING", bitmapsize - n
             
         # fill bitmap up
@@ -751,8 +751,8 @@ def imageband2PNG( image, cardsw, h, isGeoPaint):
                 print "cardsw * cardsh", cardsw * cardsh
                 print "n", n
                 print "expectedSize", expectedSize
-                if kwdbg or 1:
-                    pdb.set_trace()
+                #if kwdbg and 0:
+                #    pdb.set_trace()
                 print
 
     # extract color data
@@ -792,7 +792,7 @@ def imageband2PNG( image, cardsw, h, isGeoPaint):
                         byte = 0
 
                     if dst >= noofbytes:
-                        pdb.set_trace()
+                        #pdb.set_trace()
                         print row
                         print col
                         print byte
@@ -1128,8 +1128,8 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
             chainindex = ord(chain[j+4])
 
             if writeVersion in (10,11,20):
-                if kwdbg:
-                    pdb.set_trace()
+                #if kwdbg:
+                #    pdb.set_trace()
                 chainindex += 1
             if 63 <= chainindex <= 127:
                 if not chains:
@@ -1157,7 +1157,7 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
                 items.addImage( imagename, width, height, image )
 
             else:
-                pdb.set_trace()
+                # pdb.set_trace()
                 print "INDEX ERROR"
 
             if kwlog:
@@ -1188,8 +1188,8 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
                         print
                         print err
                         print "roomleft", (n-1) - j
-                    if kwdbg:
-                        pdb.set_trace()
+                    #if kwdbg:
+                    #    pdb.set_trace()
                     j = n 
                     exitIt = True
                     break
@@ -1290,8 +1290,8 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
                 font_size = fontsize
 
             if style != newstyle:
-                if 0: #newstyle & 7 != 0:
-                    pdb.set_trace()
+                #if 0: #newstyle & 7 != 0:
+                #    pdb.set_trace()
                 bits = [2**i for i in range(1,8)]
                 stylecodes = ['sub','sup','out','ita','rev','bld','uln']
                 rtfcommands = (
@@ -1382,8 +1382,8 @@ def convertWriteImage( vlir, folder, flags=(1,1), rtf=True, html=True, txt=True 
     except Exception, err:
         # should trap on scrap & albums
         print err
-        if kwlog:
-            pdb.set_trace()
+        #if kwlog:
+        #    pdb.set_trace()
         print
 
     ic = ItemCollector()
@@ -1972,11 +1972,11 @@ class DiskImage(object):
                 self.stream = self.readfile( self.filepath )
             else:
                 print "No File ERROR!"
-                pdb.set_trace()
+                # pdb.set_trace()
         elif stream:
             self.stream = stream
         else:
-            pdb.set_trace()
+            # pdb.set_trace()
             print
         self.isOK = False
         self.files = []
@@ -1997,8 +1997,8 @@ class DiskImage(object):
         
             s,n = dirSectorStructures[typ]
             err, dirSec = self.getTS( dtr, dsc )
-            if err != "":
-                pdb.set_trace()
+            #if err != "":
+            #    pdb.set_trace()
             t = struct.unpack(s, dirSec)
             n = n.split()
             d = dict(zip(n,t))
@@ -2048,7 +2048,7 @@ class DiskImage(object):
                         err, vlirhead = self.getTS( t, s)
                         if err:
                             print "NO VLIR"
-                            pdb.set_trace()
+                            # pdb.set_trace()
                             print
                         if not vlirhead:
                             continue
@@ -2132,8 +2132,8 @@ def getFontChain( name, s, chainIndex ):
         for x in range( bitstreamRowLength ):
             idx = y * bitstreamRowLength + x
             if idx >= len(bitstreamTable):
-                if kwdbg:
-                    pdb.set_trace()
+                #if kwdbg:
+                #    pdb.set_trace()
                 if kwlog:
                     print "chainIndex:", chainIndex
                     print "baselineOffset:", baselineOffset
