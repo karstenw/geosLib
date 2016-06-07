@@ -24,7 +24,7 @@ GEOS font files are rendered as PNG for each size.
 
 
 ```shell
-# for CBM Convert files in geoPaint, Photo Album, Photo Scrap, geoWrite, Text Album and Text Scrap format:
+# for geoPaint, Photo Album, Photo Scrap, geoWrite, Text Album and Text Scrap in CBM Convert files format (CVT):
 
 python convertCVTFiles.py *.cvt
 
@@ -32,12 +32,12 @@ python convertCVTFiles.py *.cvt
 # for geos font files in any format (d64, d81, zipped, gzipped, cvt):
 # the PNG files are written to a directory "./geosFonts"
 
-python geosCollectAllFonts.py  file|folders
+python geosCollectAllFonts.py  files or folders
 
 
 # to collect everything in directories "./geosExports" and "./geosFonts"
 
-python geosConvertAll.py files|folders
+python geosConvertAll.py files or folders
 
 ```
 
@@ -52,7 +52,7 @@ python geosConvertAll.py files|folders
 
 ### Summary
 
-+ Send CBM CVT files to CBMConvertFile and  DiskImages to DiskImage. Look at geosFiletypeScanner's usage of geosLib.getCompressedFile() on how to handle gzip and zip files.
++ Send CBM-CVT files to CBMConvertFile and  cbm disk image files (.d64, .d81) to DiskImage. Look at geosFiletypeScanner's usage of geosLib.getCompressedFile() on how to handle gzip and zip files.
 
 + IOW: get your geos file into a VLIRFile structure. The name is misleading since SEQ files go there too. That's what any of the conversion functions in geosLib expect.
 
