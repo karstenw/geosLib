@@ -16,7 +16,7 @@ GEOS font files are rendered as PNG for each size.
 [geowrite2rtf](https://github.com/mist64/geowrite2rtf) by [Michael Steil](http://www.pagetable.com/).  If you haven't seen his  [c64talk](https://www.youtube.com/watch?v=ZsRRCnque2E), go watch it.
 
 
-### Requisites
+### Requirements
 
 + [pillow](https://github.com/python-pillow/Pillow)
 
