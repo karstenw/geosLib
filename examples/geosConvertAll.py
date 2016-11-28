@@ -19,7 +19,7 @@ pp = pprint.pprint
 
 import geosLib
 geosLib.kwdbg = kwdbg
-geosLib.kwdbg = kwdbg
+geosLib.kwlog = kwlog
 
 GEOSDirEntry = geosLib.GEOSDirEntry
 GEOSHeaderBlock = geosLib.GEOSHeaderBlock
@@ -97,13 +97,6 @@ if __name__ == '__main__':
                     #for item in data:
                     #    result.append( {'': item} )
 
-            elif typ == '.cvt':
-                # pdb.set_trace()
-                data = CBMConvertFile( path )
-                d = {'': [data.vlir]}
-                result.append( d )
-                cvtfiles += 1
-
             elif typ in ('.d64', '.d81'):
                 images += 1
                 data = DiskImage( filepath=path )
@@ -118,9 +111,21 @@ if __name__ == '__main__':
                             d[n].append( u )
                 result.append( d )
             else:
+                # elif typ == '.cvt':
+                # pdb.set_trace()
+                #data = CBMConvertFile( path )
+                #d = {'': [data.vlir]}
+                #result.append( d )
+                #cvtfiles += 1
+                # elif typ == '.seq':
+                # pdb.set_trace()
+                data = CBMConvertFile( path )
+                d = {'': [data.vlir]}
+                result.append( d )
+                cvtfiles += 1
                 # check for cvt without extension here
                 # check sda, arc, ark...
-                pass
+                # pass
 
             for item in result:
                 for fld in item:
