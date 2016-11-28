@@ -20,7 +20,7 @@ import pprint
 pp = pprint.pprint
 
 import pdb
-kwdbg = 1
+kwdbg = 0
 kwlog = 1
 
 import time
