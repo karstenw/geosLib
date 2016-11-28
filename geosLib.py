@@ -20,8 +20,8 @@ import pprint
 pp = pprint.pprint
 
 import pdb
-kwdbg = 0
-kwlog = 0
+kwdbg = 1
+kwlog = 1
 
 import time
 
@@ -811,7 +811,13 @@ def imageband2PNG( image, cardsw, h, isGeoPaint):
 
     # for the bitmap image
     bwbytes = ''.join( bwbytes )
-    bwimg = PIL.Image.frombytes('1', (w,h), bwbytes, decoder_name='raw')
+    try:
+        bwimg = PIL.Image.frombytes('1', (w,h), bwbytes, decoder_name='raw')
+    except Exception, err:
+        print
+        print err
+        # pdb.set_trace()
+        return None, None
 
     # a bw source for the color image; cards get copied in bw mode
     colbytes = ''.join(colbytes)
@@ -1494,6 +1500,8 @@ class CBMConvertFile(object):
             print "GEOS file type:", gigeosfiletype
             print "GEOS file structure:", gigeosfilestructure
 
+        # pdb.set_trace()
+
         v = VLIRFile()
         v.header = self.geosHeaderBlock
         v.dirEntry = self.geosDirEntry
@@ -1501,6 +1509,7 @@ class CBMConvertFile(object):
         self.vlir = v
 
         geofiletype = ord(data[21])
+
 
         formatOK = False
         if format.startswith("PRG formatted GEOS file V1.0"):
@@ -1511,11 +1520,13 @@ class CBMConvertFile(object):
             formatOK = True
         elif format.startswith("SEQ formatted GEOS file"):
             # this is a new one
-            broken = True
+            broken = False
+            formatOK = True
         else:
             print "ERROR: Unknown file format %s" % repr(format)
             formatOK = False
             broken = True
+
 
         if formatOK:
             if geofiletype == 0:
