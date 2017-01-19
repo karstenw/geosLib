@@ -31,16 +31,47 @@ import time
 
 # unused and incomplete (yet)
 # intention is to use it with rtf & html conversion
+#
+# for IDs look here https://www.lyonlabs.org/commodore/onrequest/geos/geoFont.pdf
+#
+# mappings by github user gitjeff2
 fontmapping = {
-    0: ('BSW', 'Geneva'),           1: ('University', ''),      2: ('California', ''),
-    3: ('Roma', 'Times'),           4: ('Dwinelle', ''),        5: ('Cory', ''),
-    6: ('Tolman', ''),              7: ('Bubble', ''),          8: ('Fontknox', ''),
-    9: ('Harmon', 'Courier'),       10: ('Mykonos', ''),        11: ('Boalt', ''),
-    12: ('Stadium', ''),            14: ('Evans', ''),          13: ('Tilden', ''),
-    15: ('Durant', ''),             16: ('Telegraph', ''),      17: ('Superb', ''),
-    18: ('Bowditch', 'Palatino'),   19: ('Ormond', ''),         20: ('Elmwood', ''),
-    21: ('Hearst', ''),             21: ('Brennens (BUG)', ''), 23: ('Channing', ''),
-    24: ('Putnam', ''),             25: ('LeConte', '')}
+    # geosfontid -> (geos font name, real world font name ;-)
+    0: ('BSW', 'Geneva'),
+    1: ('University', ''),
+    2: ('California', 'Helvetica'),
+    3: ('Roma', 'Times'),
+    4: ('Dwinelle', 'Old English'),
+    5: ('Cory', 'Data 70'),
+    6: ('Tolman', 'Comic Sans'),
+    7: ('Bubble', ''),
+    8: ('Fontknox', ''),
+    9: ('Harmon', 'Courier'),
+    10: ('Mykonos', ''),
+    11: ('Boalt', ''),
+    12: ('Stadium', ''),
+    14: ('Evans', ''),
+    13: ('Tilden', ''),
+    15: ('Durant', ''),
+    16: ('Telegraph', ''),
+    17: ('Superb', 'Broadway'),
+    18: ('Bowditch', 'Palatino'),
+    19: ('Ormond', 'Microgramma Extended'),
+    20: ('Elmwood', ''),
+    21: ('Hearst', ''),
+    21: ('Brennens (BUG)', ''),
+    23: ('Channing', ''),
+    24: ('Putnam', ''),
+    25: ('LeConte', 'Mactype')
+    52: ('Callaghan': 'Stencil'),
+    866: ('Lewis': 'Playbill'),
+    
+    # the following need a font id
+    # Barrows -> Courier
+    # Birge -> Mistral
+    # Lewis -> Playbill
+    # Oxford -> Monotype Tektura
+}
 
 c64colors = {
     0: (0,0,0),
