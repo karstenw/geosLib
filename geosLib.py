@@ -62,9 +62,9 @@ fontmapping = {
     21: ('Brennens (BUG)', ''),
     23: ('Channing', ''),
     24: ('Putnam', ''),
-    25: ('LeConte', 'Mactype')
-    52: ('Callaghan': 'Stencil'),
-    866: ('Lewis': 'Playbill'),
+    25: ('LeConte', 'Mactype'),
+    52: ('Callaghan', 'Stencil'),
+    866: ('Lewis', 'Playbill'),
     
     # the following need a font id
     # Barrows -> Courier
