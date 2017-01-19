@@ -2142,6 +2142,9 @@ def getFontChain( name, s, chainIndex ):
     #  4 - rel pointer to index table
     #  6 - rel pointer to character
     
+    
+    if len(s) < 8:
+        return False, False
     baselineOffset = ord(s[0])
     bitstreamRowLength = ord(s[1]) + ord(s[2]) * 256
     fontHeight = ord(s[3])
@@ -2204,7 +2207,8 @@ def convertFontFile(geosfile, folder):
     gde = geosfile.dirEntry
 
     if gdh.geosFileType != 8:
-        print "IGNORED:", repr( infile )
+        # pdb.set_trace()
+        print "IGNORED:", repr( geosfile )
         return
 
     if kwdbg:
@@ -2228,7 +2232,12 @@ def convertFontFile(geosfile, folder):
         if chain == "":
             continue
 
-        col, bw = getFontChain( gde.fileName, chain, idx )
+        try:
+            col, bw = getFontChain( gde.fileName, chain, idx )
+        except IndexError, err:
+            col = bw = False
+            print "ERROR reading font stream", gde.filename
+            continue
 
         if col and bw:
             fname = "%s (vlir %i).png" % (gde.fileName, idx-1)
