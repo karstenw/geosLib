@@ -62,15 +62,15 @@ fontmapping = {
     21: ('Brennens (BUG)', ''),
     23: ('Channing', ''),
     24: ('Putnam', ''),
-    25: ('LeConte', 'Mactype'),
+    25: ('LeConte', 'Chicago'),
     52: ('Callaghan', 'Stencil'),
     866: ('Lewis', 'Playbill'),
     
     # the following need a font id
-    # Barrows -> Courier
-    # Birge -> Mistral
-    # Lewis -> Playbill
-    # Oxford -> Monotype Tektura
+    # xx:('Barrows', 'Courier'),
+    # xx:('Birge', 'Mistral'),
+    # xx:('Lewis', 'Playbill'),
+    # xx:('Oxford', 'Monotype Tektura'),
 }
 
 c64colors = {
