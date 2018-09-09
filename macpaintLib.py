@@ -366,7 +366,7 @@ if __name__ == '__main__':
         if s.startswith( (chr(0),chr(0),chr(0),chr(2)) ):
             s = s[640:]
         
-        if typ in (".mac", ".mpnt", ".pnt", ".pic"):
+        if typ in (".mac", ".mpnt", ".pnt", ".pntg", ".pic"):
             print repr(path)
             image = unpackBits( s )
             img = imageband2PNG( image, 72, 720)
