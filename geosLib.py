@@ -1,6 +1,8 @@
 
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import sys
 import os
 
@@ -24,6 +26,8 @@ kwdbg = 0
 kwlog = 1
 
 import time
+
+
 
 #
 # constants
@@ -341,7 +345,7 @@ def iterateFolders( infolder, validExtensions=('.d64', '.d71', '.d81',
                 if root != lastfolder:
                     lastfolder = root
                     print
-                    print "FOLDER:", repr( root )
+                    print("FOLDER:", repr( root ))
             filepath = makeunicode( filepath )
             
             if typ not in validExtensions:
@@ -362,7 +366,7 @@ def iterateFolders( infolder, validExtensions=('.d64', '.d71', '.d81',
                 typ = '.cvt'
 
             if kwlog or 1:
-                print "FILE:", repr(filepath)
+                print("FILE:", repr(filepath))
             yield typ, filepath
 
 def getCompressedFile( path, acceptedOnly=False ):
@@ -403,11 +407,11 @@ def getCompressedFile( path, acceptedOnly=False ):
             handle = zipfile.ZipFile(path, 'r')
             files = handle.infolist()
         except Exception, err:
-            print "ZIP ERROR", err
+            print("ZIP ERROR: %s" % repr(err))
             return result
 
         for zf in files:
-            print "ZIPFILE:", repr( zf.filename )
+            print("ZIPFILE: %s" % repr( zf.filename ))
             try:
                 h = handle.open(zf)
                 data = h.read()
@@ -495,8 +499,8 @@ def getAlbumNamesChain( vlir ):
             noofentries = ord(clipnamesstream[0])
             if len(clipnamesstream) != (noofentries + 1) * 17 + 1:
                 if kwlog:
-                    print "len(clipnamesstream)", len(clipnamesstream)
-                    print "(noofentries + 1) * 17 + 1", (noofentries + 1) * 17 + 1
+                    print("len(clipnamesstream) %i" % len(clipnamesstream))
+                    print("(noofentries + 1) * 17 + 1  %i" % (noofentries + 1) * 17 + 1)
                     #if kwdbg:
                     #    pdb.set_trace()
                     #    print
@@ -510,10 +514,10 @@ def getAlbumNamesChain( vlir ):
                 try:
                     clipnames[i] = namebytes
                 except IndexError, err:
-                    print
-                    print err
+                    print()
+                    print(err)
                     # pdb.set_trace()
-                    print
+                    print()
     return clipnameschain, clipnames
 
 #
@@ -541,7 +545,7 @@ def expandImageStream( s ):
             break
         if code in (64, 128):
             if kwdbg:
-                print "blank code 64,128 encountered."
+                print("blank code 64,128 encountered.")
                 #pdb.set_trace()
             continue
 
@@ -601,7 +605,7 @@ def expandScrapStream( s ):
         roomleft = (n-1) - j
         if code in (0,128,220):
             if kwdbg:
-                print "ILLEGAL OPCODES..."
+                print("ILLEGAL OPCODES...")
                 # pdb.set_trace()
                 print
             continue
@@ -717,7 +721,7 @@ def imageband2PNG( image, cardsw, h, isGeoPaint):
         # one colored image
         if kwdbg:
             #pdb.set_trace()
-            print "BITMAP BITS MISSING", bitmapsize - n
+            print("BITMAP BITS MISSING: %i" % bitmapsize - n)
             
         # fill bitmap up
         image.extend( [0] * (bitmapsize - n) )
@@ -733,7 +737,7 @@ def imageband2PNG( image, cardsw, h, isGeoPaint):
     elif n == bitmapsize:
         # one colored image
         if kwdbg:
-            print "ONLY BITMAP BITS"
+            print("ONLY BITMAP BITS")
         # add gap
         image.extend( eightZeroBytes )
         
@@ -746,7 +750,7 @@ def imageband2PNG( image, cardsw, h, isGeoPaint):
         # colored image not created by geoPaint (I guess)
         if kwdbg:
             #pdb.set_trace()
-            print "COLOR GAP MISSING"
+            print("COLOR GAP MISSING")
         i0 = image[:bitmapsize]
         c0 = image[bitmapsize:]
         image = []
@@ -776,15 +780,13 @@ def imageband2PNG( image, cardsw, h, isGeoPaint):
             n = len(image)
         else:
             if kwlog or 1:
-                print  
-                print  "UNUSUAL SIZE!!"
-                print "cardsw, cardsh", cardsw, cardsh
-                print "cardsw * cardsh", cardsw * cardsh
-                print "n", n
-                print "expectedSize", expectedSize
-                #if kwdbg and 0:
-                #    pdb.set_trace()
-                print
+                print()
+                print("UNUSUAL SIZE!!")
+                print("cardsw, cardsh: %i , %i" % (cardsw, cardsh))
+                print("cardsw * cardsh: %i" % cardsw * cardsh)
+                print("n: %i" % n)
+                print("expectedSize", expectedSize)
+                print()
 
     # extract color data
     offset = cardsw * h + 8
@@ -794,7 +796,7 @@ def imageband2PNG( image, cardsw, h, isGeoPaint):
         band = image[base:end]
         if len(band) < cardsw:
             if kwdbg:
-                print "color band extend", (cardsw -len(band))
+                print("color band extend", (cardsw -len(band)))
             band.extend( [191] * (cardsw -len(band)) )
         colorbands.append( band )
 
@@ -824,10 +826,10 @@ def imageband2PNG( image, cardsw, h, isGeoPaint):
 
                     if dst >= noofbytes:
                         #pdb.set_trace()
-                        print row
-                        print col
-                        print byte
-                        print row * BYTESPERCARD 
+                        print(row)
+                        print(col)
+                        print(byte)
+                        print(row * BYTESPERCARD)
                     bytes[dst] = byte
     else:
         # scraps are easy
@@ -845,8 +847,8 @@ def imageband2PNG( image, cardsw, h, isGeoPaint):
     try:
         bwimg = PIL.Image.frombytes('1', (w,h), bwbytes, decoder_name='raw')
     except Exception, err:
-        print
-        print err
+        print()
+        print(err)
         # pdb.set_trace()
         return None, None
 
@@ -897,7 +899,7 @@ def convertGeoPaintFile( vlir, folder ):
     outnamebase = outnamebase.replace(":", "_")
     outnamebase = outnamebase.replace("/", "_")
 
-    print repr(outnamebase)
+    print(repr(outnamebase))
 
     colimg = PIL.Image.new('RGB', (80*8,90*8), 1)
     bwimg = PIL.Image.new('1', (80*8,90*8), 1)
@@ -908,12 +910,12 @@ def convertGeoPaintFile( vlir, folder ):
             break
         # if chain == (0,255):
         if type(chain) in (list, tuple):
-            #print "EMPTY BAND!"
+            #print("EMPTY BAND!")
             col, bw = coldummy.copy(), bwdummy.copy()
         else:
             col, bw = geoPaintBand( chain )
         if not col:
-            # print "NO BAND!"
+            # print("NO BAND!")
             col = coldummy.copy()
         colimg.paste( col, (0,i*16,640,(i+1)*16))
         if not bw:
@@ -936,7 +938,7 @@ def convertPhotoAlbumFile( vlir, folder ):
     outnamebase = outnamebase.replace(":", "_")
     outnamebase = outnamebase.replace("/", "_")
     # folder = gpf.folder
-    print repr(outnamebase)
+    print(repr(outnamebase))
 
     classname = vlir.header.className
 
@@ -968,7 +970,7 @@ def convertPhotoAlbumFile( vlir, folder ):
             if not os.path.exists( of ):
                 col.save( of )
         else:
-            print "No color image for vlir: %i" % i
+            print("No color image for vlir: %i" % i)
         if bw:
             if not os.path.exists( folder ):
                 os.makedirs( folder )
@@ -980,7 +982,7 @@ def convertPhotoAlbumFile( vlir, folder ):
             if not os.path.exists( of ):
                 bw.save( of )
         else:
-            print "No bw image for vlir: %i" % i
+            print("No bw image for vlir: %i" % i)
 
 
 def convertPhotoScrapFile( vlir, folder):
@@ -989,7 +991,7 @@ def convertPhotoScrapFile( vlir, folder):
     outnamebase = outnamebase.replace(":", "_")
     outnamebase = outnamebase.replace("/", "_")
     # folder = gpf.folder
-    print repr(outnamebase)
+    print(repr(outnamebase))
 
     for i,chain in enumerate(vlir.chains):
         if chain == (0,0):
@@ -1128,7 +1130,7 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
         if nc == 0:
             if j == 0:
                 if kwlog:
-                    print "<<<Unknown Escape 0x00>>>"
+                    print("<<<Unknown Escape 0x00>>>")
                 j += 19
                 log.append("0x00 at start")
                 continue
@@ -1195,12 +1197,12 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
 
             else:
                 # pdb.set_trace()
-                print "INDEX ERROR"
+                print("INDEX ERROR")
 
             if kwlog:
-                print "<<<Graphics Escape>>> %i:%i @ VLIR:%i" % (width,
+                print("<<<Graphics Escape>>> %i:%i @ VLIR:%i" % (width,
                                                                  height,
-                                                                 chainindex)
+                                                                 chainindex))
 
             j += 4
             log.append("GRPHX vlir:%i, w: %i, h: %i" % (chainindex,width,height) )
@@ -1222,11 +1224,9 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
                     tab = struct.unpack("<H", chain[s1:s2])[0]
                 except Exception, err:
                     if kwlog:
-                        print
-                        print err
-                        print "roomleft", (n-1) - j
-                    #if kwdbg:
-                    #    pdb.set_trace()
+                        print()
+                        print(err)
+                        print("roomleft: %i" % (n-1) - j)
                     j = n 
                     exitIt = True
                     break
@@ -1265,13 +1265,13 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
             items.addHTML( '<span align="%s">' % (justifications[justifiation],) )
 
             if kwlog:
-                print "leftmargin:", repr(leftMargin)
-                print "rightMargin:", repr(rightMargin)
-                print "paragraphMargin:", repr(paragraphMargin)
-                print "justifiation:", repr(justifiation)
-                print "spacing:", repr(spacing)
-                print "color:", repr(color)
-                print "tabs:", tabs
+                print("leftmargin: %s" % repr(leftMargin))
+                print("rightMargin: %s" % repr(rightMargin))
+                print("paragraphMargin: %s" % repr(paragraphMargin))
+                print("justifiation: %s" % repr(justifiation))
+                print("spacing: %s" % repr(spacing))
+                print("color: %s" % repr(color))
+                print("tabs: %s" % repr(tabs))
     
             for tab in tabs:
                 tabpoint, decimal = tab
@@ -1300,12 +1300,12 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
                 fontname = "Arial"
 
             if kwlog:
-                print "segment:", repr(chain[j:j+4])
-                print "<<<NEWCARDSET Escape>>>"
-                print "fontID:", fontid
-                print "fontName:", fontname
-                print "font size:", fontsize
-                print "style:", bin(style)
+                print("segment: %s" % repr(chain[j:j+4]))
+                print("<<<NEWCARDSET Escape>>>")
+                print("fontID: %s" % repr(fontid))
+                print("fontName: %s" % fontname)
+                print("font size: %s" % repr(fontsize))
+                print("style: %s" % bin(style))
 
 
             if fontid != font_id:
@@ -1343,9 +1343,8 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
 
                 rtfstyles = dict(zip(bits, rtfcommands))
                 if kwdbg:
-                    print "oldstyle", bin(style)
-                    print "newstyle", bin(newstyle)
-                # pdb.set_trace()
+                    print("oldstyle %s" % bin(style))
+                    print("newstyle %s" % bin(newstyle))
 
                 for bit in bits:
                     curr = newstyle & bit
@@ -1393,7 +1392,7 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
                 log.append("CHARS")
 
     if kwlog:
-        print "<<<New Page>>>"
+        print("<<<New Page>>>")
     
     return items, log
 
@@ -1418,16 +1417,16 @@ def convertWriteImage( vlir, folder, flags=(1,1), rtf=True, html=True, txt=True 
         writeversion = geoWriteVersions.get(writeImageVersion, 21)
     except Exception, err:
         # should trap on scrap & albums
-        print err
+        print(err)
         #if kwlog:
         #    pdb.set_trace()
-        print
+        print()
 
     ic = ItemCollector()
     # ic.initDoc( basename )
     chains = vlir.chains
 
-    print repr(basename)
+    print(repr(basename))
     
     # page loop
     for idx,chain in enumerate(chains):
@@ -1524,12 +1523,12 @@ class CBMConvertFile(object):
         gigeosfilestructure = ord( geoinfo[68] )
     
         if kwlog:
-            print "icon width:", giwidth
-            print "icon height:", giheight
-            print "bitmap type", gibitmapType
-            print "DOS file type:", gidosfiletype
-            print "GEOS file type:", gigeosfiletype
-            print "GEOS file structure:", gigeosfilestructure
+            print("icon width: %i" % giwidth)
+            print("icon height: %i" % giheight)
+            print("bitmap type: %i" % gibitmapType)
+            print("DOS file type: %i" % gidosfiletype)
+            print("GEOS file type: %i" % gigeosfiletype)
+            print("GEOS file structure: %i" % gigeosfilestructure)
 
         # pdb.set_trace()
 
@@ -1554,7 +1553,7 @@ class CBMConvertFile(object):
             broken = False
             formatOK = True
         else:
-            print "ERROR: Unknown file format %s" % repr(format)
+            print("ERROR: Unknown file format %s" % repr(format))
             formatOK = False
             broken = True
 
@@ -1577,7 +1576,7 @@ class CBMConvertFile(object):
                     a1 = ord( vlirheader[i * 2] )
                     a2 = ord( vlirheader[i * 2 + 1] )
                     if kwlog:
-                        print "<<<chain 0x%02x/0x%02x>>>" % ( a1, a2 )
+                        print("<<<chain 0x%02x/0x%02x>>>" % ( a1, a2 ))
         
                     # end of file
                     if a1 == 0 and a2 == 0:
@@ -1739,11 +1738,11 @@ class GEOSHeaderBlock(object):
         self.desktopNote = cleanupString(s[158:])
 
     def prnt(self):
-        print
-        print "GEOS Header Block for:", repr(self.filepath)
+        print()
+        print("GEOS Header Block for: %s" % repr(self.filepath))
         
         # print icon
-        print '-' * 24
+        print('-' * 24)
         for y in range(21): # self.iconHeight):
             for x in range(3): # self.iconWidthCards):
                 # i = ord(self.iconDataRAW[y*self.iconWidthCards+x])
@@ -1758,36 +1757,36 @@ class GEOSHeaderBlock(object):
                     sys.stdout.write('|')
             sys.stdout.write('\n')
         sys.stdout.flush()
-        print '-' * 24
+        print('-' * 24)
         
         # print extended file attributes
-        print "GEOS File Structure:", self.geosFileStructureString
-        print "GEOS File Type:", repr(self.geosFileTypeString)
+        print("GEOS File Structure: %s" % repr(self.geosFileStructureString))
+        print("GEOS File Type: %s" % repr(self.geosFileTypeString))
 
-        print "GEOS Class Name:", repr(self.className)
+        print("GEOS Class Name:", repr(self.className))
         if self.geosFileType in filetypesWithAuthor:
-            print "GEOS Author Name:", repr(self.author)
+            print("GEOS Author Name: %s" % repr(self.author))
         else:
-            print "GEOS Parent Disk:", repr(self.parentDisk)
-        print "GEOS Creator Name:", repr(self.creator)
-        print "GEOS 40/80:", self.fourtyEightyFlags
-        print "GEOS Load Address:", hex(self.loadAddress)
-        print "GEOS End Address:", hex(self.endOfLoadAddress)
-        print "GEOS Exe Address:", hex(self.startAddress)
+            print("GEOS Parent Disk: %s" % repr(self.parentDisk))
+        print("GEOS Creator Name: %s" % repr(self.creator))
+        print("GEOS 40/80: %s" % repr(self.fourtyEightyFlags))
+        print("GEOS Load Address: %s" % hex(self.loadAddress))
+        print("GEOS End Address: %s" % hex(self.endOfLoadAddress))
+        print("GEOS Exe Address: %s" % hex(self.startAddress))
         if self.className.startswith( "Write Image V" ):
-            print "geoWrite first page number:", self.firstPagenumber
-            print "geoWrite NLQ print:", self.NLQPrint
-            print "geoWrite first page is Title:", self.titlePage
-            print "geoWrite header height:", self.headerHeight
-            print "geoWrite footer height:", self.footerHeight
-            print "geoWrite page height:", self.pageHeight
+            print("geoWrite first page number: %s" repr(self.firstPagenumber))
+            print("geoWrite NLQ print: %s" % repr(self.NLQPrint))
+            print("geoWrite first page is Title: %s" % repr(self.titlePage))
+            print("geoWrite header height: %s" % repr(self.headerHeight))
+            print("geoWrite footer height: %s" % repr(self.footerHeight))
+            print("geoWrite page height: %s" % repr(self.pageHeight))
         elif self.geosFileType == 8:
-            print "Font ID:", self.fontID
+            print("Font ID: %i" % self.fontID)
             s = [str(t) for t in self.fontPointSizes]
-            print "Font point sizes:", ', '.join(s)
+            print("Font point sizes: %s" % ', '.join(s))
             s = [str(t) for t in self.fontByteSizes]
-            print "Font byte sizes:", ', '.join(s)
-        print "GEOS DeskTop Comment:", repr(self.desktopNote)
+            print("Font byte sizes: %s" % ', '.join(s))
+        print("GEOS DeskTop Comment: %s"  repr(self.desktopNote))
 
 
 class GEOSDirEntry(object):
@@ -1849,24 +1848,24 @@ class GEOSDirEntry(object):
                 self.modfDate = "ERROR WITH:  %i %i %i - %i:%i" % (y,m,d,h,mi)
 
     def prnt(self):
-        print 
-        print '-' * 80
-        print "filename:", repr(self.fileName)
-        print '-' * 16
-        print "file OK:", self.fileOK
-        print "file Protected:", self.fileProtected
-        print "file type:", self.fileType
-        print "file Track/Sector:", self.trackSector
-        print "GEOS Header Track/Sector:", self.geosHeaderTrackSector
-        print "GEOS File Structure:", self.geosFileStructureString
-        print "GEOS File Type:", self.geosFileTypeString
-        print "GEOS File Last Modified:", str(self.modfDate)[:19]
-        print "GEOS Total Block Size:", self.fileSizeBlocks
-        print 
+        print()
+        print('-' * 80)
+        print("filename: %s" % repr(self.fileName))
+        print('-' * 16)
+        print("file OK: %s" % self.fileOK)
+        print("file Protected: %s" % self.fileProtected)
+        print("file type: %s" % self.fileType)
+        print("file Track/Sector: %s" % repr(self.trackSector))
+        print("GEOS Header Track/Sector: %s" % repr(self.geosHeaderTrackSector))
+        print("GEOS File Structure: %s" % repr(self.geosFileStructureString))
+        print("GEOS File Type: %s" % self.geosFileTypeString)
+        print("GEOS File Last Modified: %s" % str(self.modfDate)[:19])
+        print("GEOS Total Block Size: %s" % repr(self.fileSizeBlocks))
+        print()
     def smallprnt(self):
-        print (repr(self.fileName).ljust(20),
-               str(self.fileSizeBlocks).rjust(5),
-               repr(self.fileType))
+        print(repr(self.fileName).ljust(20),
+              str(self.fileSizeBlocks).rjust(5),
+              repr(self.fileType))
 
 
 class DiskImage(object):
@@ -1914,13 +1913,13 @@ class DiskImage(object):
                 return "",""
             
         except Exception, err:
-            print "getTS(%i,%i) ERROR: %s" % (t,s,err)
+            print("getTS(%i,%i) ERROR: %s" % (t,s,err))
             return err, ""
             # pdb.set_trace()
-            print 
-            #print "adr", adr
-            #print "adr+256", adr+256
-            #print len(self.stream)
+            print()
+            #print("adr", adr)
+            #print("adr+256", adr+256)
+            #print(len(self.stream))
             # error = err
         return error, data
     
@@ -1989,18 +1988,18 @@ class DiskImage(object):
     
     def printDirectory(self):
         # print directory
-        print
-        print '#' * 40
-        print repr(self.diskName)
-        print '-' * 20
+        print()
+        print('#' * 40)
+        print(repr(self.diskName))
+        print('-' * 20)
         for i in self.DirEntries:
             i.smallprnt()
         if self.deskBorder:
-            print
-            print "On Desktop border:"
+            print()
+            print("On Desktop border:")
         for i in self.deskBorder:
             i.smallprnt()
-        print
+        print()
 
     def __init__(self, stream=None, filepath=None, tag=""):
         # pdb.set_trace()
@@ -2013,13 +2012,13 @@ class DiskImage(object):
                 self.filepath = os.path.abspath(os.path.expanduser(filepath))
                 self.stream = self.readfile( self.filepath )
             else:
-                print "No File ERROR!"
+                print("No File ERROR!")
                 # pdb.set_trace()
         elif stream:
             self.stream = stream
         else:
             # pdb.set_trace()
-            print
+            print()
         self.isOK = False
         self.files = []
         size = len(self.stream)
@@ -2089,16 +2088,16 @@ class DiskImage(object):
                         # VLIR header (VLIRFile.__init__)is missing the link bytes
                         err, vlirhead = self.getTS( t, s)
                         if err:
-                            print "NO VLIR"
+                            print("NO VLIR")
                             # pdb.set_trace()
-                            print
+                            print()
                         if not vlirhead:
                             continue
                         # pdb.set_trace()
                         for i in range(127):
                             t = ord(vlirhead[i*2+0])
                             s = ord(vlirhead[i*2+1])
-                            # print i*2,t,s
+                            # print(i*2,t,s)
                             if t != 0:
                                 err, f.chains[i] = self.getChain(t, s)
                             else:
@@ -2163,13 +2162,13 @@ def getFontChain( name, s, chainIndex ):
         return False, False
 
     if len(bitstreamTable) != bitstreamTableSize:
-        print "SIZE MISMATCH:"
-        print "Name:", name
-        print "bitstreamTableSize", bitstreamTableSize
-        print "len(bitstreamTable)", len(bitstreamTable)
+        print("SIZE MISMATCH:")
+        print("Name: %s" % name)
+        print("bitstreamTableSize %i" % bitstreamTableSize)
+        print("len(bitstreamTable) %i" % len(bitstreamTable))
         if kwdbg:
             time.sleep(2)
-        print
+        print()
 
     image = []
     idx = 0
@@ -2180,18 +2179,18 @@ def getFontChain( name, s, chainIndex ):
                 #if kwdbg:
                 #    pdb.set_trace()
                 if kwlog:
-                    print "chainIndex:", chainIndex
-                    print "baselineOffset:", baselineOffset
-                    print "bitstreamRowLength:", bitstreamRowLength
-                    print "fontHeight:", fontHeight
-                    print "indextableOffset:", indextableOffset
-                    print "bitstreamOffset:", bitstreamOffset
-                    print "indexTableSize:", indexTableSize
+                    print("chainIndex: %i" % chainIndex)
+                    print("baselineOffset: %i" % baselineOffset)
+                    print("bitstreamRowLength: %i" % bitstreamRowLength)
+                    print("fontHeight: %i" % fontHeight)
+                    print("indextableOffset: %i" % indextableOffset)
+                    print("bitstreamOffset: %i" % bitstreamOffset)
+                    print("indexTableSize: %i" % indexTableSize)
                 val = 0
             else:
                 val = ord( bitstreamTable[idx])
             image.append( val )
-        # print 
+        # print()
     col, bw = imageband2PNG( image, bitstreamRowLength, fontHeight, 0 )
     # pdb.set_trace()
     if False:
@@ -2208,13 +2207,13 @@ def convertFontFile(geosfile, folder):
 
     if gdh.geosFileType != 8:
         # pdb.set_trace()
-        print "IGNORED:", repr( geosfile )
+        print("IGNORED: %s" % repr( geosfile ))
         return
 
     if kwdbg:
-        print '-' * 20
-        print gde.fileName
-        print gdh.className
+        print('-' * 20)
+        print(gde.fileName)
+        print(gdh.className)
 
     if kwlog:
         gdh.prnt()
@@ -2236,7 +2235,7 @@ def convertFontFile(geosfile, folder):
             col, bw = getFontChain( gde.fileName, chain, idx )
         except IndexError, err:
             col = bw = False
-            print "ERROR reading font stream", gde.filename
+            print("ERROR reading font stream: %s" % repr(gde.filename))
             continue
 
         if col and bw:

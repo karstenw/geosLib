@@ -1,6 +1,7 @@
 
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
 
 import sys
 import os
@@ -71,12 +72,12 @@ if __name__ == '__main__':
 
         basefolder = os.path.join( exportFolder, parentFolder )
 
-        print "\n\n\n"
-        print "#" * 120
-        print 
-        print "SOURCE:", repr(f)
-        print "-" * 120
-        print
+        print("\n\n\n")
+        print("#" * 120)
+        print()
+        print("SOURCE: %s" % repr(f))
+        print("-" * 120)
+        print()
 
         if os.path.isdir(f):
             files = iterateFolders( f )
@@ -131,15 +132,15 @@ if __name__ == '__main__':
                 for fld in item:
                     for cbmfile in item[fld]:
                         if kwdbg or 1:
-                            print cbmfile.dirEntry.fileName
+                            print(cbmfile.dirEntry.fileName)
                             # pdb.set_trace()
                             print
                         try:
                             gde = cbmfile.dirEntry
                         except AttributeError, err:
-                            print err
+                            print(err)
                             # pdb.set_trace()
-                            print 
+                            print()
                         gde.smallprnt()
 
                         if cbmfile.header == "":
@@ -174,4 +175,4 @@ if __name__ == '__main__':
                             if done and kwlog:
                                 gde.prnt()
                                 gfh.prnt()
-                                print '-' * 80
+                                print('-' * 80)

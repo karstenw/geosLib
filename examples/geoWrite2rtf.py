@@ -1,6 +1,7 @@
 
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
 
 import sys
 import os
@@ -42,12 +43,12 @@ def convertWriteDocument( f ):
     gdh = gpf.vlir.header
 
     if kwdbg:
-        print '-' * 20
-        print gde.fileName
-        print gdh.className
+        print('-' * 20)
+        print(gde.fileName)
+        print(gdh.className)
     if gdh.className not in geosLib.textTypes:
-        print "IGNORED:", repr( infile )
-        return ""
+        print("IGNORED:", repr( infile ))
+        return("")
 
     convertWriteImage( gpf.vlir, folder, (SUPPRESS_NUL, FF_TO_LF), rtf=True )
     

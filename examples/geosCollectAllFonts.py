@@ -1,6 +1,7 @@
 
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
 
 import sys
 import os
@@ -70,10 +71,10 @@ if __name__ == '__main__':
         basename, ext = os.path.splitext( filename )
         dummy, parentFolder = os.path.split( folder )
 
-        print "\n\n\n"
-        print "#" * 120
-        print "SOURCE:", repr(f)
-        print "#" * 120
+        print("\n\n\n")
+        print("#" * 120)
+        print("SOURCE: %s" % repr(f))
+        print("#" * 120)
 
         
         if os.path.isdir(f):
@@ -121,8 +122,8 @@ if __name__ == '__main__':
                         try:
                             gde = cbmfile.dirEntry
                         except AttributeError, err:
-                            print err
-                            print 
+                            print(err)
+                            print()
                         gde.smallprnt()
 
                         if cbmfile.header == "":
@@ -134,4 +135,4 @@ if __name__ == '__main__':
                                 convertFontFile(cbmfile, exportFolder)
                                 if False and kwlog:
                                     gfh.prnt()
-                                    print '-' * 80
+                                    print('-' * 80)

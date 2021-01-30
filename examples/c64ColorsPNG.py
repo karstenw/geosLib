@@ -3,6 +3,8 @@
 
 """Create a PNG with the C64 colors."""
 
+from __future__ import print_function
+
 
 
 import sys

@@ -1,6 +1,9 @@
 
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
+
 
 import sys
 import os
@@ -56,43 +59,45 @@ if __name__ == '__main__':
 
         if kwdbg:
             # print file info
-            print 
-            print 'X' * 80
-            print repr(f)
+            print()
+            print('X' * 80)
+            print(repr(f))
             gde = gpf.geosDirEntry
             gde.prnt()
             print "----"
         if vlir.header.className.startswith("Paint Image V"):
             if kwdbg:
                 vlir.header.prnt()
-                print '-' * 80
+                print('-' * 80)
             convertGeoPaintFile( vlir, folder )
         elif vlir.header.className.startswith("photo album V"):
             if kwdbg:
                 vlir.header.prnt()
-                print '-' * 80
+                print('-' * 80)
             convertPhotoAlbumFile( vlir, folder )
         elif vlir.header.className.startswith("Photo Scrap V"):
             if kwdbg:
                 vlir.header.prnt()
-                print '-' * 80
+                print('-' * 80)
             convertPhotoScrapFile( vlir, folder )
         elif vlir.header.className in textTypes:
             if kwdbg:
                 gfh.prnt()
-                print '-' * 80
+                print('-' * 80)
             convertWriteImage( vlir, folder )
+
+        # still searching for geoPub file format docs...
         elif 0: #vlir.header.className.startswith("Publish Doc "):
             if 1:
                 hd = geosLib.hexdump
                 gfh.prnt()
-                print '-' * 80
+                print('-' * 80)
             pdb.set_trace()
             print
 
         else:
-            print
-            print "NOT PROCESSED:", repr(f)
-            print "Class:", repr(vlir.header.className)
-            print '#' * 80
-            print
+            print()
+            print("NOT PROCESSED:", repr(f))
+            print("Class:", repr(vlir.header.className))
+            print('#' * 80)
+            print()
