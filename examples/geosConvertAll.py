@@ -137,7 +137,7 @@ if __name__ == '__main__':
                             print
                         try:
                             gde = cbmfile.dirEntry
-                        except AttributeError, err:
+                        except AttributeError as err:
                             print(err)
                             # pdb.set_trace()
                             print()

@@ -112,7 +112,7 @@ if __name__ == '__main__':
                 #fileTree[path].append( cbmfile )
                 try:
                     gde = cbmfile.dirEntry
-                except AttributeError, err:
+                except AttributeError as err:
                     if kwlog:
                         print err
                     if kwdbg:
@@ -130,7 +130,7 @@ if __name__ == '__main__':
                     gfh = cbmfile.header
                     #try:
                     #    gfh.prnt()
-                    #except AttributeError, err:
+                    #except AttributeError as err:
                     #    print err
                     #    pdb.set_trace()
                     #    print 

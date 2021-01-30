@@ -121,7 +121,7 @@ if __name__ == '__main__':
                     for cbmfile in item[fld]:
                         try:
                             gde = cbmfile.dirEntry
-                        except AttributeError, err:
+                        except AttributeError as err:
                             print(err)
                             print()
                         gde.smallprnt()
