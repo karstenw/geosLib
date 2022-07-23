@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
@@ -6,6 +5,7 @@ from __future__ import print_function
 import sys
 import os
 
+import time
 import datetime
 import struct
 
@@ -25,22 +25,19 @@ import pdb
 kwdbg = 1
 kwlog = 1
 
-import time
+
+
 
 # py3 stuff
-
 py3 = False
 try:
     unicode('')
-    puni = unicode
+    punicode = unicode
     pstr = str
 except NameError:
-    puni = str
+    punicode = str
     pstr = bytes
     py3 = True
-
-
-
 
 #
 # constants
@@ -1068,7 +1065,7 @@ class ItemCollector(object):
         self.title = title
         # moved to finishDoc so it get's called at the right moment (that is,
         # right before finishDoc
-    
+
     def finishDoc( self, s=""):
         # this was once in initDoc
         if len(self.rtfcollection) > 0:
@@ -1090,7 +1087,7 @@ class ItemCollector(object):
 
         self.addHTML( "</body></html>" )
         self.addRTF( "}" )
-    
+
     def addHTML(self, s):
         self.htmlcollection.append(s)
 
@@ -1161,7 +1158,7 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
         if nc == 0:
             if j == 0:
                 if kwlog:
-                    print("<<<Unknown Escape 0x00>>>")
+                    print("< < Unknown Escape 0x00 > >")
                 j += 19
                 log.append("0x00 at start")
                 continue
@@ -1231,7 +1228,7 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
                 print("INDEX ERROR")
 
             if kwlog:
-                print("<<<Graphics Escape>>> %i:%i @ VLIR:%i" % (width,
+                print("< < Graphics Escape > > %i:%i @ VLIR:%i" % (width,
                                                                  height,
                                                                  chainindex))
 
@@ -1331,7 +1328,7 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
 
             if kwlog:
                 print("segment: %s" % repr(chain[j:j+4]))
-                print("<<<NEWCARDSET Escape>>>")
+                print("< < NEWCARDSET Escape > >")
                 print("fontID: %s" % repr(fontid))
                 print("fontName: %s" % fontname)
                 print("font size: %s" % repr(fontsize))
@@ -1422,7 +1419,7 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
                 log.append("CHARS")
 
     if kwlog:
-        print("<<<New Page>>>")
+        print("< < New Page > >")
     
     return log
 
@@ -1549,11 +1546,11 @@ class CBMConvertFile(object):
         giheight = geoinfo[1]
         gibitmapType = geoinfo[2]
         gispritedata = geoinfo[3:66]
-    
+
         gidosfiletype = geoinfo[66]
         gigeosfiletype = geoinfo[67]
         gigeosfilestructure = geoinfo[68]
-    
+
         if kwlog:
             print("icon width: %i" % giwidth)
             print("icon height: %i" % giheight)
@@ -1608,7 +1605,7 @@ class CBMConvertFile(object):
                     a1 = vlirheader[i * 2]
                     a2 = vlirheader[i * 2 + 1]
                     if kwlog:
-                        print("<<<chain 0x%02x/0x%02x>>>" % ( a1, a2 ))
+                        print("< < chain 0x%02x/0x%02x > >" % ( a1, a2 ))
         
                     # end of file
                     if a1 == 0 and a2 == 0:
@@ -1834,7 +1831,7 @@ class GEOSDirEntry(object):
         # save it for CVT file export
         self.dirEntryBytes = dirEntryBytes
 
-        self.dosFileTypeRAW = dirEntryBytes[0]
+        self.dosFileTypeRAW = int(dirEntryBytes[0])
         self.fileOK = ( self.dosFileTypeRAW & 128) > 0
         self.fileProtected = ( self.dosFileTypeRAW & 64) > 0
         t = self.dosFileTypeRAW & 7
@@ -1956,7 +1953,7 @@ class DiskImage(object):
             #print(len(self.stream))
             # error = err
         return error, data
-    
+
     def getChain(self, t, s):
         error = ""
         readSoFar = set()
@@ -2019,7 +2016,7 @@ class DiskImage(object):
                 if gde.fileType in ( 'SEQ', 'PRG', 'USR'):
                     result.append( gde )
         return error, result
-    
+
     def printDirectory(self):
         # print directory
         print()
@@ -2161,7 +2158,7 @@ class FontRecord(object):
         self.bitstreamTable = s[self.bitstreamOffset:]
 
         self.bitstreamTableSize = self.fontHeight * self.bitstreamRowLength
-    
+
     # def 
 
 def getFontChain( name, s, chainIndex ):
@@ -2281,3 +2278,5 @@ def convertFontFile(geosfile, folder):
                 os.makedirs( folder )
             if not os.path.exists( path ):
                 bw.save( path )
+
+
