@@ -326,7 +326,7 @@ def datestring(dt = None, dateonly=False, nospaces=False):
 def makeunicode( s, enc="utf-8", normalizer='NFC'):
     try:
         t = type(s)
-        if t != unicode:
+        if t != punicode:
             if t in (bytearray, bytes):
                 s = str( s )
             else:
@@ -450,14 +450,6 @@ def getCompressedFile( path, acceptedOnly=False ):
         return result
     return result
 
-class ImageBuffer(list):
-    """For debugging purposes mostly. Has a built in memory dump in
-    monitor format."""
-    def __init__(self):
-        super(ImageBuffer, self).__init__()
-    def dump(self):
-        hexdump( self )
-
 def hexdump( s, col=32 ):
     """Using this for debugging was so memory lane..."""
 
@@ -501,6 +493,14 @@ def hexdump( s, col=32 ):
                     sys.stdout.write( '.' )
             sys.stdout.write('\n')
 
+
+class ImageBuffer(list):
+    """For debugging purposes mostly. Has a built in memory dump in
+    monitor format."""
+    def __init__(self):
+        super(ImageBuffer, self).__init__()
+    def dump(self):
+        hexdump( self )
 
 def getAlbumNamesChain( vlir ):
     """extract clip names for (Photo|Text) Album V2.x"""
