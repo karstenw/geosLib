@@ -154,6 +154,7 @@ stripchars = bytes( bytearray( [0, 0xa0] ) )
 
 # drive geometries
 sectorTables = {
+    # firstTrack,lastTrack, sectorCount/Track
     '.d64': (
             ( 0,  0,  0),
             ( 1, 17, 21),
