@@ -88,22 +88,23 @@ fontmapping = {
 }
 
 c64colors = {
-    0: (0,0,0),
-    1: (255,255,255),
-    2: (0x88,0,0),
-    3: (0xaa,0xff,0xee),
-    4: (0xcc,0x44,0xcc),
-    5: (0x00,0xcc,0x55),
-    6: (0x00,0x00,0xaa),
-    7: (0xee,0xee,0x77),
-    8: (0xdd,0x88,0x55),
-    9: (0x66,0x44,0x00),
-    10: (0xff,0x77,0x77),
-    11: (0x33,0x33,0x33),
-    12: (0x77,0x77,0x77),
-    13: (0xaa,0xff,0x66),
-    14: (0x00,0x88,0xff),
-    15: (0xbb,0xbb,0xbb)}
+    0: bytes( (0,0,0) ),
+    1: bytes( (255,255,255) ),
+    2: bytes( (0x88,0,0) ),
+    3: bytes( (0xaa,0xff,0xee) ),
+    4: bytes( (0xcc,0x44,0xcc) ),
+    5: bytes( (0x00,0xcc,0x55) ),
+    6: bytes( (0x00,0x00,0xaa) ),
+    7: bytes( (0xee,0xee,0x77) ),
+    8: bytes( (0xdd,0x88,0x55) ),
+    9: bytes( (0x66,0x44,0x00) ),
+    10: bytes( (0xff,0x77,0x77) ),
+    11: bytes( (0x33,0x33,0x33) ),
+    12: bytes( (0x77,0x77,0x77) ),
+    13: bytes( (0xaa,0xff,0x66) ),
+    14: bytes( (0x00,0x88,0xff) ),
+    15: bytes( (0xbb,0xbb,0xbb) )
+}
 
 geosFileTypes = {
     0: 'Non-GEOS file',
@@ -324,20 +325,13 @@ def datestring(dt = None, dateonly=False, nospaces=False):
         now = now.replace(" ", "_")
     return now
 
-def makeunicode( s, enc="utf-8", normalizer='NFC'):
-    try:
-        t = type(s)
-        if t != punicode:
-            if t in (bytearray, bytes):
-                s = str( s )
-            else:
-                s = repr( s )
-            s = unicode(s, enc)
-    except:
-        pass
+def makeunicode(s, srcencoding="utf-8", normalizer="NFC"):
+    if type(s) not in (punicode, pstr):
+        s = str( s )
+    if type(s) != punicode:
+        s = punicode(s, srcencoding)
     s = unicodedata.normalize(normalizer, s)
     return s
-
 def iterateFolders( infolder, validExtensions=('.d64', '.d71', '.d81',
                                                '.zip', '.gz',  '.cvt',
                                                '.prg', '.seq') ):
@@ -364,8 +358,9 @@ def iterateFolders( infolder, validExtensions=('.d64', '.d71', '.d81',
             if kwdbg or 1:
                 if root != lastfolder:
                     lastfolder = root
-                    print()
-                    print("FOLDER: %s" % repr( root ))
+                    if kwlog:
+                        print()
+                        print("FOLDER: %s" % repr( root ))
             filepath = makeunicode( filepath )
             
             if typ not in validExtensions:
@@ -561,8 +556,10 @@ def expandImageStream( s ):
         code = s[j]
         items = []
         roomleft = (n-1) - j
+        
         if 0: #code == 0:
             break
+        
         if code in (64, 128):
             if kwdbg:
                 print("blank code 64,128 encountered.")
@@ -711,15 +708,18 @@ def imageband2PNG( image, cardsw, h, isGeoPaint):
     
     See the 'if isGeoPaint:' part.
     """
-
+    
     # pdb.set_trace()
-
+    
+    # height in cards
     cardsh = h >> 3
     if h & 7 != 0:
         cardsh += 1
+    
+    # width in cards
     w = cardsw * 8
     # h = cardsh * 8
-
+    
     eightZeroBytes = [0] * 8
 
     noofcards = cardsw * cardsh
