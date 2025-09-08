@@ -10,28 +10,28 @@
 <find_panel_settings/>
 <vnodes>
 <v t="karstenw.20220612162505.2" a="E"><vh>NewHeadline</vh>
-<v t="karstenw.20220612162552.1"><vh>@clean geosLib.py</vh>
+<v t="karstenw.20220612162552.1" a="E"><vh>@clean geosLib.py</vh>
 <v t="karstenw.20220612162656.1"><vh>Declarations</vh></v>
 <v t="karstenw.20220612162816.1"><vh>Python3 stuff</vh></v>
 <v t="karstenw.20220612162841.1"><vh>+ CONSTANTS +</vh></v>
 <v t="karstenw.20220612162656.2"><vh>makeFilledPILImage</vh></v>
-<v t="karstenw.20230112142409.1"><vh>+ TOOLS +</vh>
+<v t="karstenw.20230112142409.1" a="E"><vh>+ TOOLS +</vh>
 <v t="karstenw.20220612162656.3"><vh>datestring</vh></v>
 <v t="karstenw.20220612162656.4"><vh>makeunicode</vh></v>
 <v t="karstenw.20220612162656.5"><vh>iterateFolders</vh></v>
 <v t="karstenw.20220612162656.6"><vh>getCompressedFile</vh></v>
 <v t="karstenw.20220612162656.10"><vh>hexdump</vh></v>
-<v t="karstenw.20220612162656.7"><vh>class ImageBuffer</vh>
+<v t="karstenw.20220612162656.7" a="E"><vh>class ImageBuffer</vh>
 <v t="karstenw.20220612162656.8"><vh>__init__</vh></v>
 <v t="karstenw.20220612162656.9"><vh>dump</vh></v>
 </v>
 </v>
-<v t="karstenw.20230112142616.1"><vh>+ GEOS +</vh>
-<v t="karstenw.20230112142932.1"><vh>+ FILE +</vh>
+<v t="karstenw.20230112142616.1" a="E"><vh>+ GEOS +</vh>
+<v t="karstenw.20230112142932.1" a="E"><vh>+ FILE +</vh>
 <v t="karstenw.20220612162656.11"><vh>getAlbumNamesChain</vh></v>
 <v t="karstenw.20220612162656.12"><vh>expandImageStream</vh></v>
 </v>
-<v t="karstenw.20230112142942.1"><vh>+ IMAGE +</vh>
+<v t="karstenw.20230112142942.1" a="E"><vh>+ IMAGE +</vh>
 <v t="karstenw.20220612162656.13"><vh>expandScrapStream</vh></v>
 <v t="karstenw.20220612162656.14"><vh>photoScrap</vh></v>
 <v t="karstenw.20220612162656.15"><vh>geoPaintBand</vh></v>
@@ -727,8 +727,10 @@ kwlog = 1
         code = s[j]
         items = []
         roomleft = (n-1) - j
+        
         if 0: #code == 0:
             break
+        
         if code in (64, 128):
             if kwdbg:
                 print("blank code 64,128 encountered.")
@@ -2057,20 +2059,13 @@ albumWithNameTypes = (
     self.desktopNote = cleanupString(s[158:])
 
 </t>
-<t tx="karstenw.20220612162656.4">def makeunicode( s, enc="utf-8", normalizer='NFC'):
-    try:
-        t = type(s)
-        if t != punicode:
-            if t in (bytearray, bytes):
-                s = str( s )
-            else:
-                s = repr( s )
-            s = unicode(s, enc)
-    except:
-        pass
+<t tx="karstenw.20220612162656.4">def makeunicode(s, srcencoding="utf-8", normalizer="NFC"):
+    if type(s) not in (punicode, pstr):
+        s = str( s )
+    if type(s) != punicode:
+        s = punicode(s, srcencoding)
     s = unicodedata.normalize(normalizer, s)
     return s
-
 </t>
 <t tx="karstenw.20220612162656.40">def prnt(self):
     print()
@@ -2333,8 +2328,9 @@ albumWithNameTypes = (
             if kwdbg or 1:
                 if root != lastfolder:
                     lastfolder = root
-                    print()
-                    print("FOLDER: %s" % repr( root ))
+                    if kwlog:
+                        print()
+                        print("FOLDER: %s" % repr( root ))
             filepath = makeunicode( filepath )
             
             if typ not in validExtensions:
@@ -2858,6 +2854,7 @@ stripchars = bytes( bytearray( [0, 0xa0] ) )
 
 # drive geometries
 sectorTables = {
+    # firstTrack,lastTrack, sectorCount/Track
     '.d64': (
             ( 0,  0,  0),
             ( 1, 17, 21),
