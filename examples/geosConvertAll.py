@@ -12,8 +12,8 @@ import gzip, zipfile
 import unicodedata
 
 import pdb
-kwdbg = 0
-kwlog = 0
+kwdbg = 1
+kwlog = 1
 
 import pprint
 pp = pprint.pprint
@@ -72,11 +72,11 @@ if __name__ == '__main__':
 
         basefolder = os.path.join( exportFolder, parentFolder )
 
-        print("\n\n\n")
-        print("#" * 120)
+        print( "\n\n\n" )
+        print( "#" * 120 )
         print()
-        print("SOURCE: %s" % repr(f))
-        print("-" * 120)
+        print( "SOURCE: %s" % f )
+        print( "-" * 120)
         print()
 
         if os.path.isdir(f):
@@ -127,7 +127,9 @@ if __name__ == '__main__':
                 # check for cvt without extension here
                 # check sda, arc, ark...
                 # pass
-
+            
+            pdb.set_trace()
+            
             for item in result:
                 for fld in item:
                     for cbmfile in item[fld]:
@@ -156,12 +158,15 @@ if __name__ == '__main__':
                             if gfh.className.startswith("Paint Image V"):
                                 convertGeoPaintFile( cbmfile, target )
                                 done = True
+                            
                             elif gfh.className.startswith("photo album V"):
                                 convertPhotoAlbumFile( cbmfile, target )
                                 done = True
+                            
                             elif gfh.className.startswith("Photo Scrap V"):
                                 convertPhotoScrapFile( cbmfile, target )
                                 done = True
+                            
                             elif gfh.className in textTypes:
                                 convertWriteImage( cbmfile, target )
                                 done = True
