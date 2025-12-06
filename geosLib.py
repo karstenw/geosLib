@@ -924,34 +924,42 @@ def convertGeoPaintFile( vlir, folder ):
     outnamebase = bytes( vlir.dirEntry.fileName )
     outnamebase = outnamebase.replace(":", "_")
     outnamebase = outnamebase.replace("/", "_")
-
-    print(repr(outnamebase))
-
+    
+    print( outnamebase )
+    
     colimg = PIL.Image.new('RGB', (80*8,90*8), 1)
     bwimg = PIL.Image.new('1', (80*8,90*8), 1)
-    # pdb.set_trace()
-
+    
     for i,chain in enumerate(vlir.chains):
+        
         if chain == (0,0):
             break
+        
         # if chain == (0,255):
+        
         if type(chain) in (list, tuple):
             #print("EMPTY BAND!")
             col, bw = coldummy.copy(), bwdummy.copy()
         else:
             col, bw = geoPaintBand( chain )
+        
         if not col:
             # print("NO BAND!")
             col = coldummy.copy()
+        
         colimg.paste( col, (0,i*16,640,(i+1)*16))
+        
         if not bw:
             bw = bwdummy.copy()
+        
         bwimg.paste( bw, (0,i*16,640,(i+1)*16))
 
     if not os.path.exists( folder ):
         os.makedirs( folder )
+    
     outfilecol = os.path.join( folder, outnamebase + "_col.png" )
     outfilebw = os.path.join( folder, outnamebase + "_bw.png" )
+    
     if not os.path.exists( outfilecol ):
         colimg.save(outfilecol)
     if not os.path.exists( outfilebw ):
@@ -1704,7 +1712,7 @@ class GEOSHeaderBlock(object):
         self.startAddress = s[73] + s[74] * 256
 
         # self.classNameRAW = s[75:95]
-        self.className = cleanupString(s[75:91])
+        self.className = cleanupString( s[75:91] )
         
         self.fourtyEightyFlags = fourtyEightyFlags.get( s[94], "")
         
@@ -1838,15 +1846,16 @@ class GEOSDirEntry(object):
         t = self.dosFileTypeRAW & 7
 
         self.fileType = dosFileTypes.get(t, "???")
-        self.trackSector = ( dirEntryBytes[1], dirEntryBytes[2])
+        self.trackSector = ( int(dirEntryBytes[1]),
+                             int(dirEntryBytes[2]))
         self.fileName = dirEntryBytes[0x03:0x13]
         self.fileName = self.fileName.rstrip(stripchars)
         
         self.geosHeaderTrackSector = (0,0)
-        self.fileSizeBlocks = dirEntryBytes[0x1c] + dirEntryBytes[0x1d] * 256
+        self.fileSizeBlocks = int(dirEntryBytes[0x1c]) + int(dirEntryBytes[0x1d]) * 256
 
         # if not geos, this is REL side sector
-        self.geosHeaderTrackSector = ( dirEntryBytes[19], dirEntryBytes[20])
+        self.geosHeaderTrackSector = ( int(dirEntryBytes[19]), int(dirEntryBytes[20]) )
         # if not geos, this is REL record size
         self.geosFileStructure = dirEntryBytes[21]
         self.geosFileStructureString = ""
@@ -1932,7 +1941,7 @@ class DiskImage(object):
     def getTS(self, t, s):
         error = ""
         if t == 0:
-            return "", ""
+            return "", b''
         try:
             # size = 256
             if self.minMaxTrack[0] <= t <= self.minMaxTrack[1]:
@@ -1940,9 +1949,9 @@ class DiskImage(object):
                     adr = self.trackByteOffsets[t-1] + s * 256
                     data = self.stream[adr:adr+256]
                 else:
-                    return "",""
+                    return "", b''
             else:
-                return "",""
+                return "", b''
             
         except Exception as err:
             print("getTS(%i,%i) ERROR: %s" % (t,s,err))
@@ -1972,8 +1981,8 @@ class DiskImage(object):
             if len(b) <= 2:
                 # pdb.set_trace()
                 break
-            tr = b[0]
-            sc = b[1]
+            tr = int(b[0])
+            sc = int(b[1])
             if tr == 0:
                 result.append( b[2:sc+1] )
                 break
@@ -1987,7 +1996,7 @@ class DiskImage(object):
                 break
             else:
                 result.append( b[2:] )
-        return error, ''.join( result )
+        return error, b''.join( result )
 
     def getDirEntries(self, t, s):
         """Read all file entries"""
@@ -2034,11 +2043,11 @@ class DiskImage(object):
         print()
 
     def __init__(self, stream=None, filepath=None, tag=""):
-        # pdb.set_trace()
+        
         # alternate path for streams
         self.tag = tag
         self.filepath = ""
-        self.stream = ""
+        self.stream = b''
         if filepath:
             if os.path.exists( filepath ):
                 self.filepath = os.path.abspath(os.path.expanduser(filepath))
@@ -2076,10 +2085,10 @@ class DiskImage(object):
             n = n.split()
             d = dict(zip(n,t))
             s = d.get('dnam', 'NO DISK NAME')
-            s = s.rstrip( chr(int("a0",16)))
+            s = s.rstrip( b'\xa0' ) #chr(int("a0",16)))
             self.diskName = s
         
-            self.isGEOSDisk = d['geoformat'] == "GEOS format"
+            self.isGEOSDisk = d['geoformat'] == b"GEOS format"
         
             err, self.DirEntries = self.getDirEntries( d['tr'], d['sc'])
             
@@ -2092,7 +2101,9 @@ class DiskImage(object):
             if self.isGEOSDisk and self.deskBorder:
                 # pdb.set_trace()
                 dirEntries.extend( self.deskBorder )
-
+            
+            #pdb.set_trace()
+            
             for dirEntry in dirEntries:
                 # 
                 # dirEntry.smallprnt()
@@ -2135,8 +2146,10 @@ class DiskImage(object):
                             else:
                                 f.chains[i] = (t,s)
                     else:
+                        #pdb.set_trace()
                         err, f.chains[0] = self.getChain(t, s)
                 else:
+                    #pdb.set_trace()
                     err, f.chains[0] = self.getChain(t, s)
 
                 self.files.append( f )
