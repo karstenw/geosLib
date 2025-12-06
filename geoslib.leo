@@ -61,16 +61,16 @@
 <v t="karstenw.20220612162656.36"><vh>__init__</vh></v>
 </v>
 <v t="karstenw.20220612162656.37"><vh>cleanupString</vh></v>
-<v t="karstenw.20220612162656.38"><vh>class GEOSHeaderBlock</vh>
+<v t="karstenw.20220612162656.38" a="E"><vh>class GEOSHeaderBlock</vh>
 <v t="karstenw.20220612162656.39"><vh>__init__</vh></v>
 <v t="karstenw.20220612162656.40"><vh>prnt</vh></v>
 </v>
-<v t="karstenw.20220612162656.41"><vh>class GEOSDirEntry</vh>
+<v t="karstenw.20220612162656.41" a="E"><vh>class GEOSDirEntry</vh>
 <v t="karstenw.20220612162656.42"><vh>__init__</vh></v>
 <v t="karstenw.20220612162656.43"><vh>prnt</vh></v>
 <v t="karstenw.20220612162656.44"><vh>smallprnt</vh></v>
 </v>
-<v t="karstenw.20220612162656.45"><vh>class DiskImage</vh>
+<v t="karstenw.20220612162656.45" a="E"><vh>class DiskImage</vh>
 <v t="karstenw.20220612162656.46"><vh>getTrackOffsetList</vh></v>
 <v t="karstenw.20220612162656.47"><vh>readfile</vh></v>
 <v t="karstenw.20220612162656.48"><vh>getTS</vh></v>
@@ -101,7 +101,7 @@
 <v t="karstenw.20220612162654.11"><vh>imageband2PNG</vh></v>
 </v>
 <v t="karstenw.20220612162628.1"><vh>@clean README.md</vh></v>
-<v t="karstenw.20220612162635.1" a="E"><vh>@clean setup.py</vh>
+<v t="karstenw.20220612162635.1"><vh>@clean setup.py</vh>
 <v t="karstenw.20220612162652.1"><vh>Declarations</vh></v>
 </v>
 </v>
@@ -883,15 +883,18 @@ kwlog = 1
     
     See the 'if isGeoPaint:' part.
     """
-
+    
     # pdb.set_trace()
-
+    
+    # height in cards
     cardsh = h &gt;&gt; 3
     if h &amp; 7 != 0:
         cardsh += 1
+    
+    # width in cards
     w = cardsw * 8
     # h = cardsh * 8
-
+    
     eightZeroBytes = [0] * 8
 
     noofcards = cardsw * cardsh
@@ -1097,34 +1100,42 @@ kwlog = 1
     outnamebase = bytes( vlir.dirEntry.fileName )
     outnamebase = outnamebase.replace(":", "_")
     outnamebase = outnamebase.replace("/", "_")
-
-    print(repr(outnamebase))
-
+    
+    print( outnamebase )
+    
     colimg = PIL.Image.new('RGB', (80*8,90*8), 1)
     bwimg = PIL.Image.new('1', (80*8,90*8), 1)
-    # pdb.set_trace()
-
+    
     for i,chain in enumerate(vlir.chains):
+        
         if chain == (0,0):
             break
+        
         # if chain == (0,255):
+        
         if type(chain) in (list, tuple):
             #print("EMPTY BAND!")
             col, bw = coldummy.copy(), bwdummy.copy()
         else:
             col, bw = geoPaintBand( chain )
+        
         if not col:
             # print("NO BAND!")
             col = coldummy.copy()
+        
         colimg.paste( col, (0,i*16,640,(i+1)*16))
+        
         if not bw:
             bw = bwdummy.copy()
+        
         bwimg.paste( bw, (0,i*16,640,(i+1)*16))
 
     if not os.path.exists( folder ):
         os.makedirs( folder )
+    
     outfilecol = os.path.join( folder, outnamebase + "_col.png" )
     outfilebw = os.path.join( folder, outnamebase + "_bw.png" )
+    
     if not os.path.exists( outfilecol ):
         colimg.save(outfilecol)
     if not os.path.exists( outfilebw ):
@@ -1995,7 +2006,7 @@ albumWithNameTypes = (
     self.startAddress = s[73] + s[74] * 256
 
     # self.classNameRAW = s[75:95]
-    self.className = cleanupString(s[75:91])
+    self.className = cleanupString( s[75:91] )
     
     self.fourtyEightyFlags = fourtyEightyFlags.get( s[94], "")
     
@@ -2141,15 +2152,16 @@ albumWithNameTypes = (
     t = self.dosFileTypeRAW &amp; 7
 
     self.fileType = dosFileTypes.get(t, "???")
-    self.trackSector = ( dirEntryBytes[1], dirEntryBytes[2])
+    self.trackSector = ( int(dirEntryBytes[1]),
+                         int(dirEntryBytes[2]))
     self.fileName = dirEntryBytes[0x03:0x13]
     self.fileName = self.fileName.rstrip(stripchars)
     
     self.geosHeaderTrackSector = (0,0)
-    self.fileSizeBlocks = dirEntryBytes[0x1c] + dirEntryBytes[0x1d] * 256
+    self.fileSizeBlocks = int(dirEntryBytes[0x1c]) + int(dirEntryBytes[0x1d]) * 256
 
     # if not geos, this is REL side sector
-    self.geosHeaderTrackSector = ( dirEntryBytes[19], dirEntryBytes[20])
+    self.geosHeaderTrackSector = ( int(dirEntryBytes[19]), int(dirEntryBytes[20]) )
     # if not geos, this is REL record size
     self.geosFileStructure = dirEntryBytes[21]
     self.geosFileStructureString = ""
@@ -2243,7 +2255,7 @@ albumWithNameTypes = (
 <t tx="karstenw.20220612162656.48">def getTS(self, t, s):
     error = ""
     if t == 0:
-        return "", ""
+        return "", b''
     try:
         # size = 256
         if self.minMaxTrack[0] &lt;= t &lt;= self.minMaxTrack[1]:
@@ -2251,9 +2263,9 @@ albumWithNameTypes = (
                 adr = self.trackByteOffsets[t-1] + s * 256
                 data = self.stream[adr:adr+256]
             else:
-                return "",""
+                return "", b''
         else:
-            return "",""
+            return "", b''
         
     except Exception as err:
         print("getTS(%i,%i) ERROR: %s" % (t,s,err))
@@ -2284,8 +2296,8 @@ albumWithNameTypes = (
         if len(b) &lt;= 2:
             # pdb.set_trace()
             break
-        tr = b[0]
-        sc = b[1]
+        tr = int(b[0])
+        sc = int(b[1])
         if tr == 0:
             result.append( b[2:sc+1] )
             break
@@ -2299,7 +2311,7 @@ albumWithNameTypes = (
             break
         else:
             result.append( b[2:] )
-    return error, ''.join( result )
+    return error, b''.join( result )
 
 </t>
 <t tx="karstenw.20220612162656.5">def iterateFolders( infolder, validExtensions=('.d64', '.d71', '.d81',
@@ -2402,11 +2414,11 @@ albumWithNameTypes = (
 
 </t>
 <t tx="karstenw.20220612162656.52">def __init__(self, stream=None, filepath=None, tag=""):
-    # pdb.set_trace()
+    
     # alternate path for streams
     self.tag = tag
     self.filepath = ""
-    self.stream = ""
+    self.stream = b''
     if filepath:
         if os.path.exists( filepath ):
             self.filepath = os.path.abspath(os.path.expanduser(filepath))
@@ -2444,10 +2456,10 @@ albumWithNameTypes = (
         n = n.split()
         d = dict(zip(n,t))
         s = d.get('dnam', 'NO DISK NAME')
-        s = s.rstrip( chr(int("a0",16)))
+        s = s.rstrip( b'\xa0' ) #chr(int("a0",16)))
         self.diskName = s
     
-        self.isGEOSDisk = d['geoformat'] == "GEOS format"
+        self.isGEOSDisk = d['geoformat'] == b"GEOS format"
     
         err, self.DirEntries = self.getDirEntries( d['tr'], d['sc'])
         
@@ -2460,7 +2472,9 @@ albumWithNameTypes = (
         if self.isGEOSDisk and self.deskBorder:
             # pdb.set_trace()
             dirEntries.extend( self.deskBorder )
-
+        
+        #pdb.set_trace()
+        
         for dirEntry in dirEntries:
             # 
             # dirEntry.smallprnt()
@@ -2503,8 +2517,10 @@ albumWithNameTypes = (
                         else:
                             f.chains[i] = (t,s)
                 else:
+                    #pdb.set_trace()
                     err, f.chains[0] = self.getChain(t, s)
             else:
+                #pdb.set_trace()
                 err, f.chains[0] = self.getChain(t, s)
 
             self.files.append( f )
@@ -2788,22 +2804,23 @@ fontmapping = {
 }
 
 c64colors = {
-    0: (0,0,0),
-    1: (255,255,255),
-    2: (0x88,0,0),
-    3: (0xaa,0xff,0xee),
-    4: (0xcc,0x44,0xcc),
-    5: (0x00,0xcc,0x55),
-    6: (0x00,0x00,0xaa),
-    7: (0xee,0xee,0x77),
-    8: (0xdd,0x88,0x55),
-    9: (0x66,0x44,0x00),
-    10: (0xff,0x77,0x77),
-    11: (0x33,0x33,0x33),
-    12: (0x77,0x77,0x77),
-    13: (0xaa,0xff,0x66),
-    14: (0x00,0x88,0xff),
-    15: (0xbb,0xbb,0xbb)}
+    0: bytes( (0,0,0) ),
+    1: bytes( (255,255,255) ),
+    2: bytes( (0x88,0,0) ),
+    3: bytes( (0xaa,0xff,0xee) ),
+    4: bytes( (0xcc,0x44,0xcc) ),
+    5: bytes( (0x00,0xcc,0x55) ),
+    6: bytes( (0x00,0x00,0xaa) ),
+    7: bytes( (0xee,0xee,0x77) ),
+    8: bytes( (0xdd,0x88,0x55) ),
+    9: bytes( (0x66,0x44,0x00) ),
+    10: bytes( (0xff,0x77,0x77) ),
+    11: bytes( (0x33,0x33,0x33) ),
+    12: bytes( (0x77,0x77,0x77) ),
+    13: bytes( (0xaa,0xff,0x66) ),
+    14: bytes( (0x00,0x88,0xff) ),
+    15: bytes( (0xbb,0xbb,0xbb) )
+}
 
 geosFileTypes = {
     0: 'Non-GEOS file',
