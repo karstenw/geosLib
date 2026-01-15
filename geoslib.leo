@@ -10,7 +10,7 @@
 <find_panel_settings/>
 <vnodes>
 <v t="karstenw.20220612162505.2" a="E"><vh>NewHeadline</vh>
-<v t="karstenw.20220612162552.1" a="E"><vh>@clean geosLib.py</vh>
+<v t="karstenw.20220612162552.1"><vh>@clean geosLib.py</vh>
 <v t="karstenw.20220612162656.1"><vh>Declarations</vh></v>
 <v t="karstenw.20220612162816.1"><vh>Python3 stuff</vh></v>
 <v t="karstenw.20220612162841.1"><vh>+ CONSTANTS +</vh></v>
@@ -86,7 +86,7 @@
 <v t="karstenw.20220612162656.56"><vh>convertFontFile</vh></v>
 </v>
 </v>
-<v t="karstenw.20220612162605.1"><vh>@clean macpaintLib.py</vh>
+<v t="karstenw.20220612162605.1" a="E"><vh>@clean macpaintLib.py</vh>
 <v t="karstenw.20220612162654.1"><vh>Declarations</vh></v>
 <v t="karstenw.20220612162654.2"><vh>datestring</vh></v>
 <v t="karstenw.20220612162654.3"><vh>makeunicode</vh></v>
@@ -138,7 +138,7 @@ if __name__ == '__main__':
         folder, filename = os.path.split( path )
         basename, ext = os.path.splitext( filename )
         
-        dest = "macpaintExports/"
+        dest = os.path.abspath( "./macpaintExports/" )
         if not os.path.exists( dest ):
             os.makedirs( dest )
         dest = os.path.join( dest, basename + ".png")
@@ -147,7 +147,7 @@ if __name__ == '__main__':
             s = s[640:]
         
         if typ in (".mac", ".mpnt", ".pnt", ".pntg", ".pic"):
-            print repr(path)
+            print( path )
             image = unpackBits( s )
             img = imageband2PNG( image, 72, 720)
             img.save( dest )
@@ -258,7 +258,7 @@ import PIL
 import PIL.Image
 import PIL.ImageDraw
 
-import cStringIO
+# import cStringIO
 
 import pprint
 pp = pprint.pprint
@@ -284,57 +284,92 @@ pictPrefix = chr(0) * 512
 #
 </t>
 <t tx="karstenw.20220612162654.10">def unpackBits( s ):
-    # 72 bytes times 720 lines
-    lbuf = []
-    f = cStringIO.StringIO( s )
-    p = 72 * 720 #len(lbuf)
-    q = 0
     
-    #t = chr(0) * 128
-    #if s.startswith( t ):
-    #    s = s[128:]
+    resultBytes = bytearray(0)
+    
+    # 72 bytes times 720 lines
+    totalBytes = 72 * 720 #len(resultBytes)
+    byteIndex = 0
     
     done = False
-    while ( q &lt; p and not done):
-        #pdb.set_trace()
-        c = f.read(1); q = f.tell()
-        if c == "":
+    
+    # check for header
+    # Before extracting the image data from a MacPaint file in a non-Macintosh
+    # environment, you must determine if a MacBinary header is prepended. This is best
+    # done by reading the bytes at offsets 101 through 125 and checking to see if they
+    # are all zero. The byte at offset 2 should be in the range of 1 to 63, and the DWORDs
+    # at offsets 83 and 87 should be in the range of 0 to 007FFFFFh. If all of these
+    # checks are true, then a MacBinary header is present.
+    
+    # check 1 bytes[101:126] are zero
+    
+    # check 2 byte[2] in range( 1,63 )
+    
+    # check 3 
+    
+    s = s[640:]
+    totalBytes = len( s )
+    # pdb.set_trace()
+    
+    def handleOpcode( data, idx ):
+        op = data[idx]
+    
+    
+    while ( byteIndex &lt; totalBytes and not done):
+        try:
+            c = s[byteIndex]
+            byteIndex += 1
+        except Exception as err:
+            print()
+            print(err)
+            print( "1 byteIndex &gt;= totalBytes", byteIndex, totalBytes )
             done = True
             break
-        co = ord(c)
-        # print hex(co)
+        co = c
+        
+        # print( hex(co) )
         
         if co &lt; 128:
-            # print "POSITIVE OPCODE", hex(co)
-            l = [co]
+            #print( "POSITIVE OPCODE", hex(co) )
+            debugList = [co]
             for i in range( co+1 ):
-                c = f.read(1); q = f.tell()
-                if c == "":
+                # c = f.read(1); q = f.tell()
+                try:
+                    c = s[byteIndex]
+                    byteIndex += 1
+                except Exception as err:
+                    print()
+                    print(err)
+                    print( "2 byteIndex &gt;= totalBytes", byteIndex, totalBytes )
                     done = True
                     break
-                lbuf.append( ord(c) )
-                l.append( ord(c) )
-            #hexdump( l )
+                resultBytes.append( c )
+                debugList.append( c )
+            #hexdump( debugList )
         else:
-            # print "NEGATIVE OPCODE", hex(co)
-            l = [co]
+            #print( "NEGATIVE OPCODE", hex(co) )
+            debugList = [co]
             co -= 256
             co = -co
-            # print hex(co)
-            co += 1
-            c = f.read(1); q = f.tell()
-            if c == "":
+            try:
+                c = s[byteIndex]
+                byteIndex += 1
+            except Exception as err:
+                print()
+                print(err)
+                print( "3 byteIndex &gt;= totalBytes", byteIndex, totalBytes )
                 done = True
                 break
-            for i in range(co):
-                lbuf.append( ord( c ) )
-                l.append( ord(c) )
-            #hexdump( l )
-    return lbuf
+            for i in range(co+1):
+                resultBytes.append( c )
+                debugList.append( c )
+            #hexdump( debugList )
+    return resultBytes
 
 </t>
-<t tx="karstenw.20220612162654.11">def imageband2PNG( image, cardsw, h):
-    """Convert a list of expanded image bytes into a PNG.
+<t tx="karstenw.20220612162654.11">
+def imageband2PNG( imageBytes, cardsw, h):
+    """Convert a list of expanded imageBytes bytes into a PNG.
     
     """
     cardsh = h &gt;&gt; 3
@@ -346,7 +381,7 @@ pictPrefix = chr(0) * 512
     noofbytes = cardsw * h
     
     # check sizes
-    n = len(image)
+    n = len(imageBytes)
     expectedSize = noofbytes
     
     # repair section
@@ -354,30 +389,30 @@ pictPrefix = chr(0) * 512
         # actual bits missing
         # fill with 0
         if kwlog or 1:
-            print "BITMAP BITS MISSING", expectedSize - n
+            print( "BITMAP BITS MISSING", expectedSize - n )
             
         # fill bitmap up
-        image.extend( [0] * (expectedSize - n) )
-        n = len(image)
+        imageBytes.extend( [0] * (expectedSize - n) )
+        n = len(imageBytes)
 
     elif n == noofbytes:
         # everything's ok
         if kwlog:
-            print "BITMAP OK"
+            print( "BITMAP OK" )
 
     elif n &gt; noofbytes:
         if kwlog or 1:
-            print "BITMAP TOO BIG", n
-        image = image[:noofbytes]
-        n = len(image)
+            print( "BITMAP TOO BIG", n )
+        imageBytes = imageBytes[:noofbytes]
+        n = len(imageBytes)
 
     # invert bw bitmap
     # looks better most of the cases
-    bwbytes = [chr(i ^ 255) for i in image]
+    bwbytes = [ i ^ 255 for i in imageBytes]
 
     # for the bitmap image
-    bwbytes = ''.join( bwbytes )
-    bwimg = PIL.Image.frombytes('1', (w,h), bwbytes, decoder_name='raw')
+    #bwbytes = ''.join( bwbytes )
+    bwimg = PIL.Image.frombytes('1', (w,h), bytes(bwbytes), decoder_name='raw')
 
     return bwimg
 
@@ -416,7 +451,7 @@ pictPrefix = chr(0) * 512
         root = makeunicode( root )
         result = {}
         pathlist = []
-
+        
         for thefile in files:
             thefile = makeunicode( thefile )
             basename, ext = os.path.splitext(thefile)
@@ -431,8 +466,8 @@ pictPrefix = chr(0) * 512
             if kwdbg or 1:
                 if root != lastfolder:
                     lastfolder = root
-                    print
-                    print "FOLDER:", repr( root )
+                    print(  )
+                    print( "FOLDER:", repr( root ) )
             filepath = makeunicode( filepath )
             
             if 0:
@@ -454,7 +489,7 @@ pictPrefix = chr(0) * 512
                     typ = '.cvt'
 
             if kwlog and 1:
-                print "FILE:", repr(filepath)
+                print( "FILE:", filepath )
             yield typ, filepath
 
 </t>
@@ -495,16 +530,16 @@ pictPrefix = chr(0) * 512
         try:
             handle = zipfile.ZipFile(path, 'r')
             files = handle.infolist()
-        except Exception, err:
-            print "ZIP ERROR", err
+        except Exception as err:
+            print( "ZIP ERROR", err )
             return result
 
         for zf in files:
-            print "ZIPFILE:", repr( zf.filename )
+            print( "ZIPFILE:", zf.filename  )
             try:
                 h = handle.open(zf)
                 data = h.read()
-            except Exception, err:
+            except Exception as err:
                 continue
             if len(data) in imagesizeToExt:
                 zfoldername = '/'.join( (foldername, zf.filename) )
@@ -547,7 +582,7 @@ pictPrefix = chr(0) * 512
     minorMask, majorMask = cols.get(col)
     d = False
     mask = col-1
-    if type(s) in( list, tuple): #ImageBuffer):
+    if type(s) in( list, tuple, bytes, bytearray): #ImageBuffer):
         d = True
     for i,c in enumerate(s):
         if d:
@@ -573,8 +608,8 @@ pictPrefix = chr(0) * 512
                     d2 = chr(c2)
                 else:
                     d2 = c2
-                if 32 &lt;= d2 &lt; 127:
-                    sys.stdout.write( c2 )
+                if 32 &lt;= c2 &lt; 127:
+                    sys.stdout.write( d2 )
                 else:
                     sys.stdout.write( '.' )
             sys.stdout.write('\n')
