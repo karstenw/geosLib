@@ -132,8 +132,11 @@ if __name__ == '__main__':
             # pdb.set_trace()
             
             for item in result:
+                print("ITEM:", item)
                 for fld in item:
+                    print("    FLD:", fld)
                     for cbmfile in item[fld]:
+                        print("        cbmfile:", cbmfile)
                         if kwdbg or 1:
                             print(cbmfile.dirEntry.fileName)
                             # pdb.set_trace()
