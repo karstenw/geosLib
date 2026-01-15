@@ -99,9 +99,9 @@ def iterateFolders( infolder, validExtensions=False ):
                     format = data[0x1e:0x3a]
 
                     formatOK = False
-                    if format.startswith("PRG formatted GEOS file"):
+                    if format.startswith( b"PRG formatted GEOS file"):
                         formatOK = True
-                    elif format.startswith("SEQ formatted GEOS file"):
+                    elif format.startswith( b"SEQ formatted GEOS file"):
                         broken = True
 
                     if not formatOK:
@@ -363,7 +363,7 @@ if __name__ == '__main__':
             os.makedirs( dest )
         dest = os.path.join( dest, basename + ".png")
 
-        if s.startswith( (chr(0),chr(0),chr(0),chr(2)) ):
+        if s.startswith( bytes( (0,0,0,2) ) ): #(chr(0),chr(0),chr(0),chr(2)) ):
             s = s[640:]
         
         if typ in (".mac", ".mpnt", ".pnt", ".pntg", ".pic"):

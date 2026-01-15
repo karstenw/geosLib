@@ -5,6 +5,7 @@ from __future__ import print_function
 
 import sys
 import os
+sys.path.insert(0, os.path.abspath( os.path.join("..","..") ))
 
 import struct
 import gzip, zipfile
@@ -128,7 +129,7 @@ if __name__ == '__main__':
                 # check sda, arc, ark...
                 # pass
             
-            pdb.set_trace()
+            # pdb.set_trace()
             
             for item in result:
                 for fld in item:
@@ -137,6 +138,9 @@ if __name__ == '__main__':
                             print(cbmfile.dirEntry.fileName)
                             # pdb.set_trace()
                             print
+
+                        if cbmfile.header == "":
+                            continue
                         try:
                             gde = cbmfile.dirEntry
                         except AttributeError as err:
@@ -145,25 +149,23 @@ if __name__ == '__main__':
                             print()
                         gde.smallprnt()
 
-                        if cbmfile.header == "":
-                            continue
-
                         if gde.isGEOSFile:
                             gfh = cbmfile.header
                             target = os.path.join( basefolder, fld)
-                            target = basefolder
+                            # target = basefolder
 
                             done = False
 
-                            if gfh.className.startswith("Paint Image V"):
+                            if gfh.className.startswith( b"Paint Image V"):
                                 convertGeoPaintFile( cbmfile, target )
                                 done = True
                             
-                            elif gfh.className.startswith("photo album V"):
+                            elif gfh.className.startswith( b"photo album V"):
+                                #pdb.set_trace()
                                 convertPhotoAlbumFile( cbmfile, target )
                                 done = True
                             
-                            elif gfh.className.startswith("Photo Scrap V"):
+                            elif gfh.className.startswith( b"Photo Scrap V"):
                                 convertPhotoScrapFile( cbmfile, target )
                                 done = True
                             
@@ -174,7 +176,7 @@ if __name__ == '__main__':
                             elif gfh.geosFileType == 8:
                                 # font file
                                 # ATTENTION: exports all in one folder!
-                                convertFontFile(cbmfile, fontExportFolder)
+                                # convertFontFile(cbmfile, fontExportFolder)
                                 done = True
 
                             if done and kwlog:

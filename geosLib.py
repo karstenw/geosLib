@@ -88,22 +88,22 @@ fontmapping = {
 }
 
 c64colors = {
-    0: bytes( (0,0,0) ),
-    1: bytes( (255,255,255) ),
-    2: bytes( (0x88,0,0) ),
-    3: bytes( (0xaa,0xff,0xee) ),
-    4: bytes( (0xcc,0x44,0xcc) ),
-    5: bytes( (0x00,0xcc,0x55) ),
-    6: bytes( (0x00,0x00,0xaa) ),
-    7: bytes( (0xee,0xee,0x77) ),
-    8: bytes( (0xdd,0x88,0x55) ),
-    9: bytes( (0x66,0x44,0x00) ),
-    10: bytes( (0xff,0x77,0x77) ),
-    11: bytes( (0x33,0x33,0x33) ),
-    12: bytes( (0x77,0x77,0x77) ),
-    13: bytes( (0xaa,0xff,0x66) ),
-    14: bytes( (0x00,0x88,0xff) ),
-    15: bytes( (0xbb,0xbb,0xbb) )
+    0: (0,0,0),
+    1: (255,255,255),
+    2: (0x88,0,0),
+    3: (0xaa,0xff,0xee),
+    4: (0xcc,0x44,0xcc),
+    5: (0x00,0xcc,0x55),
+    6: (0x00,0x00,0xaa),
+    7: (0xee,0xee,0x77),
+    8: (0xdd,0x88,0x55),
+    9: (0x66,0x44,0x00),
+    10: (0xff,0x77,0x77),
+    11: (0x33,0x33,0x33),
+    12: (0x77,0x77,0x77),
+    13: (0xaa,0xff,0x66),
+    14: (0x00,0x88,0xff),
+    15: (0xbb,0xbb,0xbb)
 }
 
 geosFileTypes = {
@@ -145,7 +145,7 @@ fourtyEightyFlags = {
     192:  "GEOS 128 80 columns"}
 
 # a lot of names are surrounded by this
-stripchars = bytes( bytearray( [0, 0xa0] ) )
+stripchars = bytes( [0, 0xa0] )
 
 
 #
@@ -236,16 +236,17 @@ if kwdbg:
 #
 
 def makeFilledPILImage( w,h, typ, intList ):
-    barray = bytes( bytearray(intList) )
+    barray = bytes( intList )
     return PIL.Image.frombytes(typ, (w,h), barray, decoder_name='raw')
 
 
 # a image band in color (default geos bg color)
-intlist = [ bgcol[0], bgcol[1], bgcol[2] ] * (640*16)
+intlist = bytes( [ bgcol[0], bgcol[1], bgcol[2] ] * (640*16) )
 coldummy = makeFilledPILImage(640,16, 'RGB', intlist)
 # coldummy.save("coldummy.png")
 
-intlist = [ 255 ] * 80 * 16
+intlist = bytes( [ 255 ] * 80 * 16 )
+
 bwdummy = makeFilledPILImage(640,16, '1', intlist)
 # bwdummy.save("bwdummy.png")
 
@@ -360,10 +361,11 @@ def iterateFolders( infolder, validExtensions=('.d64', '.d71', '.d81',
                     lastfolder = root
                     if kwlog:
                         print()
-                        print("FOLDER: %s" % repr( root ))
+                        print("FOLDER: %s" % root )
             filepath = makeunicode( filepath )
             
             if typ not in validExtensions:
+                
                 # check for cvt file by scanning
                 f = open(filepath, 'rb')
                 data = f.read(4096)
@@ -371,9 +373,9 @@ def iterateFolders( infolder, validExtensions=('.d64', '.d71', '.d81',
                 format = data[0x1e:0x3a]
 
                 formatOK = False
-                if format.startswith("PRG formatted GEOS file"):
+                if format.startswith( b"PRG formatted GEOS file" ):
                     formatOK = True
-                elif format.startswith("SEQ formatted GEOS file"):
+                elif format.startswith( b"SEQ formatted GEOS file" ):
                     broken = True
 
                 if not formatOK:
@@ -381,7 +383,7 @@ def iterateFolders( infolder, validExtensions=('.d64', '.d71', '.d81',
                 typ = '.cvt'
 
             if kwlog or 1:
-                print("FILE: %s" % repr(filepath))
+                print("FILE: %s" % filepath)
             yield typ, filepath
 
 def getCompressedFile( path, acceptedOnly=False ):
@@ -422,11 +424,11 @@ def getCompressedFile( path, acceptedOnly=False ):
             handle = zipfile.ZipFile(path, 'r')
             files = handle.infolist()
         except Exception as err:
-            print("ZIP ERROR: %s" % repr(err))
+            print("ZIP ERROR: %s" % (err,) )
             return result
 
         for zf in files:
-            print("ZIPFILE: %s" % repr( zf.filename ))
+            print("ZIPFILE: %s" % (makeunicode( zf.filename ),))
             try:
                 h = handle.open(zf)
                 data = h.read()
@@ -457,10 +459,11 @@ def hexdump( s, col=32 ):
 
     if not col in cols:
         col = 16
+    
     minorMask, majorMask = cols.get(col)
     d = False
     mask = col-1
-    if type(s) in( list, tuple): #ImageBuffer):
+    if type(s) in( list, tuple, bytes, bytearray): #ImageBuffer):
         d = True
     for i,c in enumerate(s):
         if d:
@@ -548,13 +551,14 @@ def expandImageStream( s ):
 
     n = len(s)
     j = -1
-    image = ImageBuffer()
+    # image = ImageBuffer()
     
+    image = bytearray(0)
     log = []
     while j < n-1:
         j += 1
         code = s[j]
-        items = []
+        items = bytearray(0)
         roomleft = (n-1) - j
         
         if 0: #code == 0:
@@ -615,7 +619,7 @@ def expandScrapStream( s ):
        'Photo Scrap' and geoWrite files."""
     n = len(s)
     j = -1
-    image = []
+    image = bytearray(0)
     while j < n-1:
         j += 1
         code = s[j]
@@ -716,11 +720,11 @@ def imageband2PNG( image, cardsw, h, isGeoPaint):
     if h & 7 != 0:
         cardsh += 1
     
-    # width in cards
+    # width in pixels
     w = cardsw * 8
     # h = cardsh * 8
     
-    eightZeroBytes = [0] * 8
+    eightZeroBytes = bytes( [0] * 8 )
 
     noofcards = cardsw * cardsh
     noofbytes = noofcards * 8
@@ -728,7 +732,7 @@ def imageband2PNG( image, cardsw, h, isGeoPaint):
     noofcolorbands = cardsh
     
     # holds a list of card colors; one list per row
-    colorbands = []
+    colorbands = bytearray(0)
     
     # check sizes
     n = len(image)
@@ -744,7 +748,7 @@ def imageband2PNG( image, cardsw, h, isGeoPaint):
         # one colored image
         if kwdbg:
             #pdb.set_trace()
-            print("BITMAP BITS MISSING: %i" % bitmapsize - n)
+            print("BITMAP BITS MISSING: %i" % (bitmapsize - n,) )
             
         # fill bitmap up
         image.extend( [0] * (bitmapsize - n) )
@@ -817,17 +821,17 @@ def imageband2PNG( image, cardsw, h, isGeoPaint):
     for row in range(cardsh):
         base = offset + row * cardsw
         end = base + cardsw
-        band = image[base:end]
+        band = bytearray( image[base:end] )
         if len(band) < cardsw:
             if kwdbg:
                 print("color band extend", (cardsw -len(band)))
             band.extend( [191] * (cardsw -len(band)) )
-        colorbands.append( band )
+        colorbands.extend( band )
 
     # bring the image bytes into the right order
     if isGeoPaint:
         # this is only for geoPaint files
-        byts = bytearray( [ 0 ] * noofbytes )
+        byts = bytearray( noofbytes )
         
         ROWS = cardsh
         COLS = cardsw
@@ -865,12 +869,12 @@ def imageband2PNG( image, cardsw, h, isGeoPaint):
 
     # invert bw bitmap
     # looks better most of the cases
-    bwbytes = bytes( bytearray( [ i ^ 255 for i in byts] ))
+    bwbytes = bytearray( [ i ^ 255 for i in byts] )
 
     # for the bitmap image
     # bwbytes = ''.join( bwbytes )
     try:
-        bwimg = PIL.Image.frombytes('1', (w,h), bwbytes, decoder_name='raw')
+        bwimg = PIL.Image.frombytes('1', (w,h), bytes(bwbytes), decoder_name='raw')
     except Exception as err:
         print()
         print(err)
@@ -884,7 +888,9 @@ def imageband2PNG( image, cardsw, h, isGeoPaint):
 
     # new image
     colimg = PIL.Image.new('RGB', (w,h), (1,1,1))
-
+    
+    # pdb.set_trace()
+    
     for row in range(cardsh):
         # create the color image by
         # 1. painting background color 8x8 cards (draw.rectangle below)
@@ -892,8 +898,9 @@ def imageband2PNG( image, cardsw, h, isGeoPaint):
         base = row * cardsw
         for col in range(cardsw):
             idx = base + col
-
-            color = colorbands[row][col]
+            
+            # color = colorbands[row][col]
+            color = colorbands[idx]
             bgi = color & 15
             bg = c64colors[bgi]
             fgi = (color >> 4) & 15
@@ -921,9 +928,9 @@ def imageband2PNG( image, cardsw, h, isGeoPaint):
 
 def convertGeoPaintFile( vlir, folder ):
     # gpf, gdh
-    outnamebase = bytes( vlir.dirEntry.fileName )
-    outnamebase = outnamebase.replace(":", "_")
-    outnamebase = outnamebase.replace("/", "_")
+    outnamebase = makeunicode( vlir.dirEntry.fileName )
+    outnamebase = outnamebase.replace( ":", "_")
+    outnamebase = outnamebase.replace( "/", "_")
     
     print( outnamebase )
     
@@ -968,13 +975,16 @@ def convertGeoPaintFile( vlir, folder ):
 
 def convertPhotoAlbumFile( vlir, folder ):
     # f, gpf
-    outnamebase = vlir.dirEntry.fileName
-    outnamebase = outnamebase.replace(":", "_")
-    outnamebase = outnamebase.replace("/", "_")
+    
+    # pdb.set_trace()
+    
+    outnamebase = makeunicode(vlir.dirEntry.fileName, "macroman")
+    outnamebase = outnamebase.replace( ":", "_")
+    outnamebase = outnamebase.replace( "/", "_")
     # folder = gpf.folder
-    print(repr(outnamebase))
+    print( outnamebase )
 
-    classname = vlir.header.className
+    classname = makeunicode(vlir.header.className, "macroman")
 
     clipnameschain = -1
     clipnames = [ "" ] * 127
@@ -990,12 +1000,13 @@ def convertPhotoAlbumFile( vlir, folder ):
 
         col, bw = photoScrap( chain )
         
-        clipname = b""
+        clipname = ""
         if clipnames[i]:
-            clipname = b'-"' + clipnames[i] + b'"'
+            clipname = '-"' + makeunicode(clipnames[i]) + '"'
         if col:
             if not os.path.exists( folder ):
                 os.makedirs( folder )
+            clipname = makeunicode(clipname)
             filename = (outnamebase
                         + '-' + str(i+1).rjust(3,'0')
                         + clipname + "_col.png")
@@ -1023,11 +1034,11 @@ def convertPhotoAlbumFile( vlir, folder ):
 
 def convertPhotoScrapFile( vlir, folder):
 
-    outnamebase = vlir.dirEntry.fileName
+    outnamebase = makeunicode(vlir.dirEntry.fileName, 'macroman')
     outnamebase = outnamebase.replace(":", "_")
     outnamebase = outnamebase.replace("/", "_")
     # folder = gpf.folder
-    print(repr(outnamebase))
+    print( outnamebase )
 
     for i,chain in enumerate(vlir.chains):
         if chain == (0,0):
@@ -1302,13 +1313,13 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
             items.addHTML( '<span align="%s">' % (justifications[justifiation],) )
 
             if kwlog:
-                print("leftmargin: %s" % repr(leftMargin))
-                print("rightMargin: %s" % repr(rightMargin))
-                print("paragraphMargin: %s" % repr(paragraphMargin))
-                print("justifiation: %s" % repr(justifiation))
-                print("spacing: %s" % repr(spacing))
-                print("color: %s" % repr(color))
-                print("tabs: %s" % repr(tabs))
+                print("leftmargin: %s" % (leftMargin,))
+                print("rightMargin: %s" % (rightMargin,))
+                print("paragraphMargin: %s" % (paragraphMargin,))
+                print("justifiation: %s" % (justifiation,))
+                print("spacing: %s" % (spacing,))
+                print("color: %s" % (color,))
+                print("tabs: %s" % (tabs,))
     
             for tab in tabs:
                 tabpoint, decimal = tab
@@ -1336,11 +1347,11 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
                 fontname = "Arial"
 
             if kwlog:
-                print("segment: %s" % repr(chain[j:j+4]))
+                print("segment: %s" % makeunicode(chain[j:j+4]))
                 print("< < NEWCARDSET Escape > >")
-                print("fontID: %s" % repr(fontid))
+                print("fontID: %s" % makeunicode(fontid))
                 print("fontName: %s" % fontname)
-                print("font size: %s" % repr(fontsize))
+                print("font size: %s" % makeunicode(fontsize))
                 print("style: %s" % bin(style))
 
             if fontid != font_id:
@@ -1446,7 +1457,7 @@ def convertWriteImage( vlir, folder, flags=(1,1), rtf=True, html=True, txt=True 
     """
     # prepare
     log = []
-    basename = bytes( vlir.dirEntry.fileName )
+    basename = vlir.dirEntry.fileName
     writeversion = 21
     try:
         writeImageVersion = bytes( vlir.header.className )
@@ -1462,7 +1473,7 @@ def convertWriteImage( vlir, folder, flags=(1,1), rtf=True, html=True, txt=True 
     # ic.initDoc( basename )
     chains = vlir.chains
 
-    print(repr(basename))
+    print( basename )
     
     # page loop
     pdb.set_trace()
@@ -1533,23 +1544,19 @@ def convertWriteImage( vlir, folder, flags=(1,1), rtf=True, html=True, txt=True 
 class CBMConvertFile(object):
     def __init__(self, filepath):
 
-        infile = filepath
-        infile = os.path.abspath(os.path.expanduser(infile))
+        filepath = os.path.abspath(os.path.expanduser(filepath))
+        self.folder, self.filename = os.path.split( filepath )
+        basename, ext = os.path.splitext( self.filename )
 
-        self.folder, filename = os.path.split( infile )
-        basename, ext = os.path.splitext( filename )
-
-        f = open(infile, 'rb')
+        f = open(filepath, 'rb')
         data = f.read()
         f.close()
-        data = bytearray( data )
 
-        self.direntry = data[0:0x1e]
-        self.geosDirEntry = GEOSDirEntry(self.direntry)
+        self.geosDirEntry = GEOSDirEntry( data[0:0x1e] )
 
         format = data[0x1e:0x3a]
         geoinfo = data[0xfe:0x1fc]
-        self.geosHeaderBlock = GEOSHeaderBlock(geoinfo, infile)
+        self.geosHeaderBlock = GEOSHeaderBlock(geoinfo, filepath)
 
         giwidth = geoinfo[0] * 8
         giheight = geoinfo[1]
@@ -1573,20 +1580,20 @@ class CBMConvertFile(object):
         v = VLIRFile()
         v.header = self.geosHeaderBlock
         v.dirEntry = self.geosDirEntry
-        v.filepath = infile
+        v.filepath = filepath
         self.vlir = v
 
         geofiletype = data[21]
 
 
         formatOK = False
-        if format.startswith("PRG formatted GEOS file V1.0"):
+        if format.startswith( b"PRG formatted GEOS file V1.0" ):
             broken = False
             formatOK = True
-        elif format.startswith("PRG formatted GEOS file"):
+        elif format.startswith( b"PRG formatted GEOS file"):
             broken = True
             formatOK = True
-        elif format.startswith("SEQ formatted GEOS file"):
+        elif format.startswith( b"SEQ formatted GEOS file"):
             # this is a new one
             broken = False
             formatOK = True
@@ -1664,8 +1671,11 @@ class VLIRFile(object):
 
 def cleanupString( s ):
     # remove garbage
+    typ = type(s)
+    if typ not in (bytes,bytearray):
+        s = bytes( s )
     t = s.strip( stripchars )
-    return t.split( chr(0) )[0]
+    return t.split( bytes( "\x00", "ascii" ))[0]
 
 class GEOSHeaderBlock(object):
 
@@ -1742,7 +1752,7 @@ class GEOSHeaderBlock(object):
         self.fontPointSizes = []
         self.fontByteSizes = []
         
-        if self.className.startswith( "Write Image V" ):
+        if self.className.startswith( b"Write Image V" ):
             # it's a geowrite file
             self.firstPagenumber = s[0x87] + s[0x88] * 256
             
@@ -1777,7 +1787,7 @@ class GEOSHeaderBlock(object):
 
     def prnt(self):
         print()
-        print("GEOS Header Block for: %s" % repr(self.filepath))
+        print("GEOS Header Block for: %s" % makeunicode(self.filepath))
         
         # print icon
         print('-' * 24)
@@ -1811,7 +1821,7 @@ class GEOSHeaderBlock(object):
         print("GEOS Load Address: %s" % hex(self.loadAddress))
         print("GEOS End Address: %s" % hex(self.endOfLoadAddress))
         print("GEOS Exe Address: %s" % hex(self.startAddress))
-        if self.className.startswith( "Write Image V" ):
+        if self.className.startswith( b"Write Image V" ):
             print("geoWrite first page number: %s" % repr(self.firstPagenumber))
             print("geoWrite NLQ print: %s" % repr(self.NLQPrint))
             print("geoWrite first page is Title: %s" % repr(self.titlePage))
@@ -1840,22 +1850,23 @@ class GEOSDirEntry(object):
         # save it for CVT file export
         self.dirEntryBytes = dirEntryBytes
 
-        self.dosFileTypeRAW = int(dirEntryBytes[0])
+        self.dosFileTypeRAW = dirEntryBytes[0]
         self.fileOK = ( self.dosFileTypeRAW & 128) > 0
         self.fileProtected = ( self.dosFileTypeRAW & 64) > 0
         t = self.dosFileTypeRAW & 7
 
         self.fileType = dosFileTypes.get(t, "???")
-        self.trackSector = ( int(dirEntryBytes[1]),
-                             int(dirEntryBytes[2]))
+        self.trackSector = ( dirEntryBytes[1], dirEntryBytes[2])
         self.fileName = dirEntryBytes[0x03:0x13]
         self.fileName = self.fileName.rstrip(stripchars)
+        self.fileName = makeunicode(self.fileName, "macroman")
         
         self.geosHeaderTrackSector = (0,0)
-        self.fileSizeBlocks = int(dirEntryBytes[0x1c]) + int(dirEntryBytes[0x1d]) * 256
+        self.fileSizeBlocks = dirEntryBytes[0x1c] + dirEntryBytes[0x1d] * 256
 
         # if not geos, this is REL side sector
-        self.geosHeaderTrackSector = ( int(dirEntryBytes[19]), int(dirEntryBytes[20]) )
+        self.geosHeaderTrackSector = ( dirEntryBytes[19], dirEntryBytes[20] )
+        
         # if not geos, this is REL record size
         self.geosFileStructure = dirEntryBytes[21]
         self.geosFileStructureString = ""
@@ -1874,7 +1885,7 @@ class GEOSDirEntry(object):
             self.geosFileType = dirEntryBytes[22]
             #self.geosFileTypeString = geosFileTypes[self.geosFileType]
             self.geosFileTypeString = geosFileTypes.get(self.geosFileType,
-                                    "UNKNOWN GEOS filetype: %i" % self.geosFileType)
+                                    "UNKNOWN GEOS filetype: %i" % (self.geosFileType,) )
 
             self.modfDateRAW = dirEntryBytes[0x17:0x1c]
             dates = [ i for i in self.modfDateRAW]
@@ -1891,7 +1902,7 @@ class GEOSDirEntry(object):
     def prnt(self):
         print()
         print('-' * 80)
-        print("filename: %s" % repr(self.fileName))
+        print("filename: %s" % (self.fileName,))
         print('-' * 16)
         print("file OK: %s" % self.fileOK)
         print("file Protected: %s" % self.fileProtected)
@@ -2047,7 +2058,7 @@ class DiskImage(object):
         # alternate path for streams
         self.tag = tag
         self.filepath = ""
-        self.stream = b''
+        self.stream = bytearray()
         if filepath:
             if os.path.exists( filepath ):
                 self.filepath = os.path.abspath(os.path.expanduser(filepath))
@@ -2102,11 +2113,11 @@ class DiskImage(object):
                 # pdb.set_trace()
                 dirEntries.extend( self.deskBorder )
             
-            #pdb.set_trace()
+            # pdb.set_trace()
             
             for dirEntry in dirEntries:
                 # 
-                # dirEntry.smallprnt()
+                dirEntry.smallprnt()
                 f = VLIRFile()
                 f.dirEntry = dirEntry
             
@@ -2118,7 +2129,7 @@ class DiskImage(object):
                     err, s = self.getTS( dirEntry.geosHeaderTrackSector[0],
                                     dirEntry.geosHeaderTrackSector[1] )
                     if len(s) == 256:
-                        src = "IMAGE:" + repr(dirEntry.fileName)
+                        src = "IMAGE:" + dirEntry.fileName
                         if self.filepath:
                             src = self.filepath
                         f.header = GEOSHeaderBlock(s, src)
@@ -2189,12 +2200,18 @@ def getFontChain( name, s, chainIndex ):
     
     if len(s) < 8:
         return False, False
+    
+    uname = makeunicode(name)
+    
+    print("\n\ngetFontChain()", uname, chainIndex )
+    
     baselineOffset = s[0]
     bitstreamRowLength = s[1] + s[2] * 256
     fontHeight = s[3]
     indextableOffset = s[4] + s[5] * 256
     bitstreamOffset = s[6] + s[7] * 256
-
+    
+    
     indexTableSize = bitstreamOffset - indextableOffset
 
     indexTable = s[indextableOffset:indextableOffset+indexTableSize]
@@ -2206,6 +2223,11 @@ def getFontChain( name, s, chainIndex ):
     if len(bitstreamTable) == 0:
         return False, False
 
+    if (    fontHeight == 0
+         or indextableOffset == 0
+         or bitstreamOffset == 0):
+        return False, False
+    
     if len(bitstreamTable) != bitstreamTableSize:
         print("SIZE MISMATCH:")
         print("Name: %s" % name)
@@ -2284,7 +2306,7 @@ def convertFontFile(geosfile, folder):
             continue
 
         if col and bw:
-            fname = "%s (vlir %i).png" % (gde.fileName, idx-1)
+            fname = "%s (vlir %i).png" % ( makeunicode(gde.fileName), idx-1)
             if '/' in fname:
                 fname = fname.replace('/', ':')
             path = os.path.join( folder, fname)
