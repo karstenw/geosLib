@@ -5,7 +5,8 @@ from __future__ import print_function
 
 import sys
 import os
-sys.path.insert(0, os.path.abspath( os.path.join("..","..") ))
+# sys.path.insert(0, os.path.abspath( os.path.join("..","..") ))
+sys.path.insert(0, os.path.abspath( ".." ) )
 
 import struct
 import gzip, zipfile
@@ -107,7 +108,7 @@ if __name__ == '__main__':
                 d = {n: []}
                 for u in data.files:
                     if u.header:
-                        if u.header.className in acceptedTypes:
+                        if makeunicode(u.header.className, 'ascii') in acceptedTypes:
                             d[n].append( u )
                         elif u.dirEntry.geosFileType == 8:
                             d[n].append( u )
@@ -140,7 +141,7 @@ if __name__ == '__main__':
                         if kwdbg or 1:
                             print(cbmfile.dirEntry.fileName)
                             # pdb.set_trace()
-                            print
+                            print()
 
                         if cbmfile.header == "":
                             continue
@@ -172,14 +173,15 @@ if __name__ == '__main__':
                                 convertPhotoScrapFile( cbmfile, target )
                                 done = True
                             
-                            elif gfh.className in textTypes:
+                            elif makeunicode(gfh.className, 'ascii') in textTypes:
+                                # pdb.set_trace()
                                 convertWriteImage( cbmfile, target )
                                 done = True
 
                             elif gfh.geosFileType == 8:
                                 # font file
                                 # ATTENTION: exports all in one folder!
-                                # convertFontFile(cbmfile, fontExportFolder)
+                                convertFontFile(cbmfile, fontExportFolder)
                                 done = True
 
                             if done and kwlog:
