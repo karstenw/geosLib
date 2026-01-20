@@ -413,7 +413,7 @@ def getCompressedFile( path, acceptedOnly=False ):
             di = DiskImage( stream=file_content, tag=path )
             if acceptedOnly:
                 for u in di.files:
-                    if u.header.className in acceptedTypes:
+                    if makeunicode(u.header.className, 'ascii') in acceptedTypes:
                         result[foldername].append( u )
             else:
                 result[foldername].extend(di.files)
@@ -441,7 +441,7 @@ def getCompressedFile( path, acceptedOnly=False ):
                 di = DiskImage( stream=data, tag=path )
                 if acceptedOnly:
                     for u in di.files:
-                        if u.header.className in acceptedTypes:
+                        if makeunicode(u.header.className, 'ascii') in acceptedTypes:
                             result[zfoldername].append( u )
                 else:
                     result[zfoldername].extend( di.files )
@@ -1109,13 +1109,13 @@ class ItemCollector(object):
         self.addRTF( "}" )
 
     def addHTML(self, s):
-        self.htmlcollection.append(s)
+        self.htmlcollection.append( s )
 
     def addRTF(self, s):
-        self.rtfcollection.append(s)
+        self.rtfcollection.append( s )
 
     def addTEXT(self, s):
-        self.textcollection.append(s)
+        self.textcollection.append( s )
 
     def addImage(self, name, w, h, img):
         self.imagecollection[name] = (w,h,img)
@@ -1171,10 +1171,11 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
         if dist <= 2:
             # pdb.set_trace()
             pass
-        c = chain[j]
+        nc = chain[j]
         # TODO uses of c - should be char
-        nc = c
-
+        #nc = c
+        c = chr(nc)
+        
         if nc == 0:
             if j == 0:
                 if kwlog:
@@ -1184,25 +1185,25 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
                 continue
             if SUPPRESS_NUL:
                 continue
-
+        
         elif nc == 12:
             if FF_TO_LF:
-                items.addRTF( b"\n\n" )
-                items.addHTML( b"<br/><br/>\n" )
-                items.addTEXT( b"\n\n" )
+                items.addRTF( "\n\n" )
+                items.addHTML( "<br/><br/>\n" )
+                items.addTEXT( "\n\n" )
                 continue
             else:
-                items.addRTF( b"\\page " )
-                items.addTEXT( c )
-                items.addHTML( b"<hr/>\n" )
-                log.append( b"LF" )
+                items.addRTF( "\\page " )
+                items.addTEXT( "\n" )
+                items.addHTML( "<hr/>\n" )
+                log.append( "LF" )
                 continue
 
         elif nc == 13:
-            items.addRTF( b"\\\n" )
-            items.addHTML( b"<br/>\n" )
-            items.addTEXT( b"\n" )
-            log.append( b"RET" )
+            items.addRTF( "\\\n" )
+            items.addHTML( "<br/>\n" )
+            items.addTEXT( "\n" )
+            log.append( "RET" )
             continue;
 
         elif nc == 16:
@@ -1236,8 +1237,8 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
                 # image.save(imagename)
                 rtfs = "{{\\NeXTGraphic %s \\width%i \\height%i} " + chr(0xac) + "}"
                 items.addRTF( rtfs % (imagename, width, height) )
-                items.addHTML( b'<img src="%s" />' % (imagename,) )
-                items.addTEXT( b"\n\nIMAGEFILE(%i, %i, %s)\n\n" % (width,
+                items.addHTML( '<img src="%s" />' % (imagename,) )
+                items.addTEXT( "\n\nIMAGEFILE(%i, %i, %s)\n\n" % (width,
                                                                   height,
                                                                   imagename) )
                 # items.addImage( imagename, width, height, image )
@@ -1253,7 +1254,7 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
                                                                  chainindex))
 
             j += 4
-            log.append( b"GRPHX vlir:%i, w: %i, h: %i" % (chainindex,width,height) )
+            log.append( "GRPHX vlir:%i, w: %i, h: %i" % (chainindex,width,height) )
             continue
 
         elif nc == 17:
@@ -1430,7 +1431,8 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
             items.addTEXT( c )
             log.append("{}")
             continue
-
+        
+        #pdb.set_trace()
         items.addRTF( c )
         items.addHTML( c )
         items.addTEXT( c )
@@ -1457,10 +1459,10 @@ def convertWriteImage( vlir, folder, flags=(1,1), rtf=True, html=True, txt=True 
     """
     # prepare
     log = []
-    basename = vlir.dirEntry.fileName
+    basename = makeunicode(vlir.dirEntry.fileName, 'ascii')
     writeversion = 21
     try:
-        writeImageVersion = bytes( vlir.header.className )
+        writeImageVersion = vlir.header.className
         writeversion = geoWriteVersions.get(writeImageVersion, 21)
     except Exception as err:
         # should trap on scrap & albums
@@ -1475,13 +1477,14 @@ def convertWriteImage( vlir, folder, flags=(1,1), rtf=True, html=True, txt=True 
 
     print( basename )
     
+    # pdb.set_trace()
+    
     # page loop
-    pdb.set_trace()
     for idx,chain in enumerate(chains):
         chain = bytes( chain )
         if chain in ( (0,0), (0,255), None, False, b"\x00\xff", b"\x00\x00"):
             continue
-
+        
         if idx >= 61:
             break
 
@@ -1492,9 +1495,9 @@ def convertWriteImage( vlir, folder, flags=(1,1), rtf=True, html=True, txt=True 
     ic.addRTF( "}" )
 
     # write out
-    rtfs = b''.join( ic.rtfcollection )
-    htmls = b''.join( ic.htmlcollection )
-    texts = b''.join( ic.textcollection )
+    rtfs = ''.join( ic.rtfcollection )
+    htmls = ''.join( ic.htmlcollection )
+    texts = ''.join( ic.textcollection )
 
     if rtf:
         rtfoutfolder = os.path.join( folder, basename + ".rtfd" )
@@ -1502,7 +1505,7 @@ def convertWriteImage( vlir, folder, flags=(1,1), rtf=True, html=True, txt=True 
             os.makedirs( rtfoutfolder )
         rtfoutfile = os.path.join( rtfoutfolder, "TXT.rtf")
         if not os.path.exists( rtfoutfile ):
-            f = open(rtfoutfile, 'wb')
+            f = open(rtfoutfile, 'w')
             f.write( rtfs )
             f.close()
 
@@ -1512,14 +1515,14 @@ def convertWriteImage( vlir, folder, flags=(1,1), rtf=True, html=True, txt=True 
             os.makedirs( htmloutfolder )
         htmloutfile = os.path.join( htmloutfolder, "index.html")
         if not os.path.exists( htmloutfile ):
-            f = open(htmloutfile, 'wb')
+            f = open(htmloutfile, 'w')
             f.write( htmls )
             f.close()
 
     if txt:
         textoutfile = os.path.join(folder, basename + ".txt")
         if not os.path.exists( textoutfile ):
-            f = open(textoutfile, 'wb')
+            f = open(textoutfile, 'w')
             f.write( texts )
             f.close()
 
@@ -1834,7 +1837,7 @@ class GEOSHeaderBlock(object):
             print("Font point sizes: %s" % ', '.join(s))
             s = [str(t) for t in self.fontByteSizes]
             print("Font byte sizes: %s" % ', '.join(s))
-        print("GEOS DeskTop Comment: %s" % repr(self.desktopNote))
+        print("GEOS DeskTop Comment: %s" % ( repr(self.desktopNote), ) )
 
 
 class GEOSDirEntry(object):
