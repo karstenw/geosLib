@@ -65,10 +65,10 @@ if __name__ == '__main__':
     
     fileTree = {}
 
-    for f in sys.argv[1:]:
+    for fullpath in sys.argv[1:]:
 
-        f = os.path.abspath(os.path.expanduser(f))
-        folder, filename = os.path.split( f )
+        fullpath = os.path.abspath(os.path.expanduser(fullpath))
+        folder, filename = os.path.split( fullpath )
         basename, ext = os.path.splitext( filename )
         dummy, parentFolder = os.path.split( folder )
 
@@ -77,19 +77,25 @@ if __name__ == '__main__':
         print( "\n\n\n" )
         print( "#" * 120 )
         print()
-        print( "SOURCE: %s" % f )
+        print( "SOURCE: %s" % fullpath )
         print( "-" * 120)
         print()
 
-        if os.path.isdir(f):
-            files = iterateFolders( f )
+        if os.path.isdir(fullpath):
+            files = iterateFolders( fullpath )
         else:
             # make a file behave like it came from the iterator
             typ = ext.lower()
-            files = [ (typ,f) ]
-
+            files = [ (typ,fullpath) ]
+        
         for typ, path in files:
-
+            
+            # extract relpath
+            relpath = path.replace( fullpath, "" )
+            if relpath and relpath[0] == "/":
+                relpath = relpath[1:]
+            
+            
             result = []
             if typ in ('.gz', '.zip'):
                 # perhaps compressed image
@@ -108,7 +114,14 @@ if __name__ == '__main__':
                 d = {n: []}
                 for u in data.files:
                     if u.header:
-                        if makeunicode(u.header.className, 'ascii') in acceptedTypes:
+                        uclassname = ""
+                        try:
+                            uclassname = makeunicode(u.header.className, 'ascii')
+                        except Exception as err:
+                            # print( err )
+                            uclassname = repr( u.header.className )
+                        
+                        if uclassname in acceptedTypes:
                             d[n].append( u )
                         elif u.dirEntry.geosFileType == 8:
                             d[n].append( u )
@@ -159,21 +172,27 @@ if __name__ == '__main__':
                             # target = basefolder
 
                             done = False
+                            uclassname = ""
+                            try:
+                                uclassname = makeunicode( gfh.className, 'ascii')
+                            except Exception as err:
+                                # print( err )
+                                uclassname = repr( u.header.className )
 
-                            if gfh.className.startswith( b"Paint Image V"):
+                            if uclassname.startswith( "Paint Image V"):
                                 convertGeoPaintFile( cbmfile, target )
                                 done = True
                             
-                            elif gfh.className.startswith( b"photo album V"):
+                            elif uclassname.startswith( "photo album V"):
                                 #pdb.set_trace()
                                 convertPhotoAlbumFile( cbmfile, target )
                                 done = True
                             
-                            elif gfh.className.startswith( b"Photo Scrap V"):
+                            elif uclassname.startswith( "Photo Scrap V"):
                                 convertPhotoScrapFile( cbmfile, target )
                                 done = True
                             
-                            elif makeunicode(gfh.className, 'ascii') in textTypes:
+                            elif uclassname in textTypes:
                                 # pdb.set_trace()
                                 convertWriteImage( cbmfile, target )
                                 done = True

@@ -22,8 +22,8 @@ import pprint
 pp = pprint.pprint
 
 import pdb
-kwdbg = 1
-kwlog = 1
+kwdbg = 0
+kwlog = 0
 
 
 
@@ -256,10 +256,10 @@ acceptedTypes = (
     'Paint Image V1.0',
     'Paint Image V1.1',
     'Paint Image v1.1',
-
+    
     'photo album V1.0',
     'photo album V2.1',
-
+    
     'Photo Scrap V1.0',
     'Photo Scrap V1.1',
     
@@ -267,10 +267,10 @@ acceptedTypes = (
     'Write Image V1.1',
     'Write Image V2.0',
     'Write Image V2.1',
-
+    
     'text album  V1.0',
     'text album  V2.1',
-
+    
     'Text  Scrap V1.0',
     'Text  Scrap V1.1',
     'Text  Scrap V2.0')
@@ -386,6 +386,7 @@ def iterateFolders( infolder, validExtensions=('.d64', '.d71', '.d81',
                 print("FILE: %s" % filepath)
             yield typ, filepath
 
+
 def getCompressedFile( path, acceptedOnly=False ):
     """Open a gzip or zip compressed file. Return the GEOS and c64 files in
     contained disk image(s)
@@ -448,6 +449,7 @@ def getCompressedFile( path, acceptedOnly=False ):
         return result
     return result
 
+
 def hexdump( s, col=32 ):
     """Using this for debugging was so memory lane..."""
 
@@ -487,7 +489,7 @@ def hexdump( s, col=32 ):
                 c2 = s[offs+j]
                 d2 = c2
                 if 32 <= d2 < 127:
-                    sys.stdout.write( c2 )
+                    sys.stdout.write( chr(c2) )
                 else:
                     sys.stdout.write( '.' )
             sys.stdout.write('\n')
@@ -1139,7 +1141,7 @@ class ItemCollector(object):
         sstart = "{\\fonttbl"
         send = "}"
         sitem = "\\f%i\\fnil\\fcharset0 %s;"
-        keys = self.fontIDName.keys()
+        keys = list(self.fontIDName.keys())
         keys.sort()
         items = [ sstart ]
         for key in keys:
@@ -1346,15 +1348,21 @@ def getGeoWriteStream(items, chain, chains, log, flags=(0,0), writeVersion=0):
                 fontname = fontname[1]
             else:
                 fontname = "Arial"
-
+            
             if kwlog:
-                print("segment: %s" % makeunicode(chain[j:j+4]))
-                print("< < NEWCARDSET Escape > >")
-                print("fontID: %s" % makeunicode(fontid))
-                print("fontName: %s" % fontname)
-                print("font size: %s" % makeunicode(fontsize))
-                print("style: %s" % bin(style))
-
+                try:
+                    print("segment: %s" % (repr(chain[j:j+4]),) )
+                    print("< < NEWCARDSET Escape > >")
+                    print("fontID: %s" % (makeunicode(fontid),))
+                    print("fontName: %s" % (fontname,))
+                    print("font size: %s" % (makeunicode(fontsize),))
+                    print("style: %s" % (bin(style),))
+                except Exception as err:
+                    if kwdbg:
+                        print()
+                        print(err)
+                        pdb.set_trace()
+            
             if fontid != font_id:
                 if 1: #' ' in fontname:
                     items.addHTML( '''<span style="font-family: '%s';">'''  % fontname )
