@@ -10,28 +10,33 @@
 <find_panel_settings/>
 <vnodes>
 <v t="karstenw.20220612162505.2" a="E"><vh>NewHeadline</vh>
-<v t="karstenw.20220612162552.1"><vh>@clean geosLib.py</vh>
+<v t="karstenw.20220612162552.1" a="E"><vh>@clean geosLib.py</vh>
 <v t="karstenw.20220612162656.1"><vh>Declarations</vh></v>
 <v t="karstenw.20220612162816.1"><vh>Python3 stuff</vh></v>
-<v t="karstenw.20220612162841.1"><vh>+ CONSTANTS +</vh></v>
+<v t="karstenw.20220612162841.1" a="E"><vh>+ CONSTANTS +</vh>
+<v t="karstenw.20260331132823.1"><vh>+ FONT +</vh></v>
+<v t="karstenw.20260331132859.1"><vh>+ DOS +</vh></v>
+<v t="karstenw.20260331132946.1"><vh>+ DRIVE +</vh></v>
+<v t="karstenw.20260331133043.1"><vh>+ COLORS +</vh></v>
+</v>
 <v t="karstenw.20220612162656.2"><vh>makeFilledPILImage</vh></v>
-<v t="karstenw.20230112142409.1" a="E"><vh>+ TOOLS +</vh>
+<v t="karstenw.20230112142409.1"><vh>+ TOOLS +</vh>
 <v t="karstenw.20220612162656.3"><vh>datestring</vh></v>
 <v t="karstenw.20220612162656.4"><vh>makeunicode</vh></v>
 <v t="karstenw.20220612162656.5"><vh>iterateFolders</vh></v>
 <v t="karstenw.20220612162656.6"><vh>getCompressedFile</vh></v>
 <v t="karstenw.20220612162656.10"><vh>hexdump</vh></v>
-<v t="karstenw.20220612162656.7" a="E"><vh>class ImageBuffer</vh>
+<v t="karstenw.20220612162656.7"><vh>class ImageBuffer</vh>
 <v t="karstenw.20220612162656.8"><vh>__init__</vh></v>
 <v t="karstenw.20220612162656.9"><vh>dump</vh></v>
 </v>
 </v>
 <v t="karstenw.20230112142616.1" a="E"><vh>+ GEOS +</vh>
-<v t="karstenw.20230112142932.1"><vh>+ FILE +</vh>
+<v t="karstenw.20230112142932.1" a="E"><vh>+ FILE +</vh>
 <v t="karstenw.20220612162656.11"><vh>getAlbumNamesChain</vh></v>
-<v t="karstenw.20220612162656.12"><vh>expandImageStream</vh></v>
 </v>
 <v t="karstenw.20230112142942.1" a="E"><vh>+ IMAGE +</vh>
+<v t="karstenw.20220612162656.12"><vh>expandImageStream</vh></v>
 <v t="karstenw.20220612162656.13"><vh>expandScrapStream</vh></v>
 <v t="karstenw.20220612162656.14"><vh>photoScrap</vh></v>
 <v t="karstenw.20220612162656.15"><vh>geoPaintBand</vh></v>
@@ -86,7 +91,7 @@
 <v t="karstenw.20220612162656.56"><vh>convertFontFile</vh></v>
 </v>
 </v>
-<v t="karstenw.20220612162605.1" a="E"><vh>@clean macpaintLib.py</vh>
+<v t="karstenw.20220612162605.1"><vh>@clean macpaintLib.py</vh>
 <v t="karstenw.20220612162654.1"><vh>Declarations</vh></v>
 <v t="karstenw.20220612162654.2"><vh>datestring</vh></v>
 <v t="karstenw.20220612162654.3"><vh>makeunicode</vh></v>
@@ -651,8 +656,8 @@ import pprint
 pp = pprint.pprint
 
 import pdb
-kwdbg = 1
-kwlog = 1
+kwdbg = 0
+kwlog = 0
 
 
 
@@ -697,7 +702,7 @@ kwlog = 1
                 c2 = s[offs+j]
                 d2 = c2
                 if 32 &lt;= d2 &lt; 127:
-                    sys.stdout.write( c2 )
+                    sys.stdout.write( chr(c2) )
                 else:
                     sys.stdout.write( '.' )
             sys.stdout.write('\n')
@@ -741,13 +746,6 @@ kwlog = 1
                     print()
     return clipnameschain, clipnames
 
-#
-# file tools
-#
-
-#
-# geos image conversion
-#
 
 </t>
 <t tx="karstenw.20220612162656.12">def expandImageStream( s ):
@@ -1280,7 +1278,11 @@ kwlog = 1
 #
 
 </t>
-<t tx="karstenw.20220612162656.2">def makeFilledPILImage( w,h, typ, intList ):
+<t tx="karstenw.20220612162656.2">#
+# create color and bw "empty" image bands for the empty records in a geoPaint file
+#
+
+def makeFilledPILImage( w,h, typ, intList ):
     barray = bytes( intList )
     return PIL.Image.frombytes(typ, (w,h), barray, decoder_name='raw')
 
@@ -1290,74 +1292,12 @@ intlist = bytes( [ bgcol[0], bgcol[1], bgcol[2] ] * (640*16) )
 coldummy = makeFilledPILImage(640,16, 'RGB', intlist)
 # coldummy.save("coldummy.png")
 
+
 intlist = bytes( [ 255 ] * 80 * 16 )
 
 bwdummy = makeFilledPILImage(640,16, '1', intlist)
-# bwdummy.save("bwdummy.png")
+bwdummy.save("bwdummy.png")
 
-
-# currently accepted GEOS file types for conversion; fonts have their own file type
-acceptedTypes = (
-    'Paint Image V1.0',
-    'Paint Image V1.1',
-    'Paint Image v1.1',
-
-    'photo album V1.0',
-    'photo album V2.1',
-
-    'Photo Scrap V1.0',
-    'Photo Scrap V1.1',
-    
-    'Write Image V1.0',
-    'Write Image V1.1',
-    'Write Image V2.0',
-    'Write Image V2.1',
-
-    'text album  V1.0',
-    'text album  V2.1',
-
-    'Text  Scrap V1.0',
-    'Text  Scrap V1.1',
-    'Text  Scrap V2.0')
-
-# all the GEOS text file types
-textTypes = (
-    'Write Image V1.0',
-    'Write Image V1.1',
-    'Write Image V2.0',
-    'Write Image V2.1',
-    
-    'text album  V1.0',
-    'text album  V2.1',
-
-    'Text  Scrap V1.0',
-    'Text  Scrap V1.1',
-    'Text  Scrap V2.0')
-
-imageTypes = (
-    'Paint Image V1.0',
-    'Paint Image V1.1',
-    'Paint Image v1.1',
-
-    'photo album V1.0',
-    'photo album V2.1',
-
-    'Photo Scrap V1.0',
-    'Photo Scrap V1.1')
-
-geoWriteVersions = {
-    b'Write Image V1.0': 10,
-    b'Write Image V1.1': 11,
-    b'Write Image V2.0': 20,
-    b'Write Image V2.1': 21}
-
-albumWithNameTypes = (
-    'photo album V2.1',
-    'text album  V2.1')
-
-#
-# tools
-#
 </t>
 <t tx="karstenw.20220612162656.20">class ItemCollector(object):
     """Collect the rtf, html and image snippets for second pass assembly.
@@ -1406,15 +1346,15 @@ albumWithNameTypes = (
 
 </t>
 <t tx="karstenw.20220612162656.24">def addHTML(self, s):
-    self.htmlcollection.append(s)
+    self.htmlcollection.append( s )
 
 </t>
 <t tx="karstenw.20220612162656.25">def addRTF(self, s):
-    self.rtfcollection.append(s)
+    self.rtfcollection.append( s )
 
 </t>
 <t tx="karstenw.20220612162656.26">def addTEXT(self, s):
-    self.textcollection.append(s)
+    self.textcollection.append( s )
 
 </t>
 <t tx="karstenw.20220612162656.27">def addImage(self, name, w, h, img):
@@ -1456,7 +1396,7 @@ albumWithNameTypes = (
     sstart = "{\\fonttbl"
     send = "}"
     sitem = "\\f%i\\fnil\\fcharset0 %s;"
-    keys = self.fontIDName.keys()
+    keys = list(self.fontIDName.keys())
     keys.sort()
     items = [ sstart ]
     for key in keys:
@@ -1488,10 +1428,11 @@ albumWithNameTypes = (
         if dist &lt;= 2:
             # pdb.set_trace()
             pass
-        c = chain[j]
+        nc = chain[j]
         # TODO uses of c - should be char
-        nc = c
-
+        #nc = c
+        c = chr(nc)
+        
         if nc == 0:
             if j == 0:
                 if kwlog:
@@ -1501,25 +1442,25 @@ albumWithNameTypes = (
                 continue
             if SUPPRESS_NUL:
                 continue
-
+        
         elif nc == 12:
             if FF_TO_LF:
-                items.addRTF( b"\n\n" )
-                items.addHTML( b"&lt;br/&gt;&lt;br/&gt;\n" )
-                items.addTEXT( b"\n\n" )
+                items.addRTF( "\n\n" )
+                items.addHTML( "&lt;br/&gt;&lt;br/&gt;\n" )
+                items.addTEXT( "\n\n" )
                 continue
             else:
-                items.addRTF( b"\\page " )
-                items.addTEXT( c )
-                items.addHTML( b"&lt;hr/&gt;\n" )
-                log.append( b"LF" )
+                items.addRTF( "\\page " )
+                items.addTEXT( "\n" )
+                items.addHTML( "&lt;hr/&gt;\n" )
+                log.append( "LF" )
                 continue
 
         elif nc == 13:
-            items.addRTF( b"\\\n" )
-            items.addHTML( b"&lt;br/&gt;\n" )
-            items.addTEXT( b"\n" )
-            log.append( b"RET" )
+            items.addRTF( "\\\n" )
+            items.addHTML( "&lt;br/&gt;\n" )
+            items.addTEXT( "\n" )
+            log.append( "RET" )
             continue;
 
         elif nc == 16:
@@ -1553,8 +1494,8 @@ albumWithNameTypes = (
                 # image.save(imagename)
                 rtfs = "{{\\NeXTGraphic %s \\width%i \\height%i} " + chr(0xac) + "}"
                 items.addRTF( rtfs % (imagename, width, height) )
-                items.addHTML( b'&lt;img src="%s" /&gt;' % (imagename,) )
-                items.addTEXT( b"\n\nIMAGEFILE(%i, %i, %s)\n\n" % (width,
+                items.addHTML( '&lt;img src="%s" /&gt;' % (imagename,) )
+                items.addTEXT( "\n\nIMAGEFILE(%i, %i, %s)\n\n" % (width,
                                                                   height,
                                                                   imagename) )
                 # items.addImage( imagename, width, height, image )
@@ -1570,7 +1511,7 @@ albumWithNameTypes = (
                                                                  chainindex))
 
             j += 4
-            log.append( b"GRPHX vlir:%i, w: %i, h: %i" % (chainindex,width,height) )
+            log.append( "GRPHX vlir:%i, w: %i, h: %i" % (chainindex,width,height) )
             continue
 
         elif nc == 17:
@@ -1662,15 +1603,21 @@ albumWithNameTypes = (
                 fontname = fontname[1]
             else:
                 fontname = "Arial"
-
+            
             if kwlog:
-                print("segment: %s" % makeunicode(chain[j:j+4]))
-                print("&lt; &lt; NEWCARDSET Escape &gt; &gt;")
-                print("fontID: %s" % makeunicode(fontid))
-                print("fontName: %s" % fontname)
-                print("font size: %s" % makeunicode(fontsize))
-                print("style: %s" % bin(style))
-
+                try:
+                    print("segment: %s" % (repr(chain[j:j+4]),) )
+                    print("&lt; &lt; NEWCARDSET Escape &gt; &gt;")
+                    print("fontID: %s" % (makeunicode(fontid),))
+                    print("fontName: %s" % (fontname,))
+                    print("font size: %s" % (makeunicode(fontsize),))
+                    print("style: %s" % (bin(style),))
+                except Exception as err:
+                    if kwdbg:
+                        print()
+                        print(err)
+                        pdb.set_trace()
+            
             if fontid != font_id:
                 if 1: #' ' in fontname:
                     items.addHTML( '''&lt;span style="font-family: '%s';"&gt;'''  % fontname )
@@ -1747,7 +1694,8 @@ albumWithNameTypes = (
             items.addTEXT( c )
             log.append("{}")
             continue
-
+        
+        #pdb.set_trace()
         items.addRTF( c )
         items.addHTML( c )
         items.addTEXT( c )
@@ -1775,10 +1723,10 @@ albumWithNameTypes = (
     """
     # prepare
     log = []
-    basename = vlir.dirEntry.fileName
+    basename = makeunicode(vlir.dirEntry.fileName, 'ascii')
     writeversion = 21
     try:
-        writeImageVersion = bytes( vlir.header.className )
+        writeImageVersion = vlir.header.className
         writeversion = geoWriteVersions.get(writeImageVersion, 21)
     except Exception as err:
         # should trap on scrap &amp; albums
@@ -1793,13 +1741,14 @@ albumWithNameTypes = (
 
     print( basename )
     
+    # pdb.set_trace()
+    
     # page loop
-    pdb.set_trace()
     for idx,chain in enumerate(chains):
         chain = bytes( chain )
         if chain in ( (0,0), (0,255), None, False, b"\x00\xff", b"\x00\x00"):
             continue
-
+        
         if idx &gt;= 61:
             break
 
@@ -1810,9 +1759,9 @@ albumWithNameTypes = (
     ic.addRTF( "}" )
 
     # write out
-    rtfs = b''.join( ic.rtfcollection )
-    htmls = b''.join( ic.htmlcollection )
-    texts = b''.join( ic.textcollection )
+    rtfs = ''.join( ic.rtfcollection )
+    htmls = ''.join( ic.htmlcollection )
+    texts = ''.join( ic.textcollection )
 
     if rtf:
         rtfoutfolder = os.path.join( folder, basename + ".rtfd" )
@@ -1820,7 +1769,7 @@ albumWithNameTypes = (
             os.makedirs( rtfoutfolder )
         rtfoutfile = os.path.join( rtfoutfolder, "TXT.rtf")
         if not os.path.exists( rtfoutfile ):
-            f = open(rtfoutfile, 'wb')
+            f = open(rtfoutfile, 'w')
             f.write( rtfs )
             f.close()
 
@@ -1830,14 +1779,14 @@ albumWithNameTypes = (
             os.makedirs( htmloutfolder )
         htmloutfile = os.path.join( htmloutfolder, "index.html")
         if not os.path.exists( htmloutfile ):
-            f = open(htmloutfile, 'wb')
+            f = open(htmloutfile, 'w')
             f.write( htmls )
             f.close()
 
     if txt:
         textoutfile = os.path.join(folder, basename + ".txt")
         if not os.path.exists( textoutfile ):
-            f = open(textoutfile, 'wb')
+            f = open(textoutfile, 'w')
             f.write( texts )
             f.close()
 
@@ -2171,7 +2120,7 @@ albumWithNameTypes = (
         print("Font point sizes: %s" % ', '.join(s))
         s = [str(t) for t in self.fontByteSizes]
         print("Font byte sizes: %s" % ', '.join(s))
-    print("GEOS DeskTop Comment: %s" % repr(self.desktopNote))
+    print("GEOS DeskTop Comment: %s" % ( repr(self.desktopNote), ) )
 
 
 </t>
@@ -2411,6 +2360,7 @@ albumWithNameTypes = (
             if kwlog or 1:
                 print("FILE: %s" % filepath)
             yield typ, filepath
+
 
 </t>
 <t tx="karstenw.20220612162656.50">def getDirEntries(self, t, s):
@@ -2752,7 +2702,7 @@ albumWithNameTypes = (
             di = DiskImage( stream=file_content, tag=path )
             if acceptedOnly:
                 for u in di.files:
-                    if u.header.className in acceptedTypes:
+                    if makeunicode(u.header.className, 'ascii') in acceptedTypes:
                         result[foldername].append( u )
             else:
                 result[foldername].extend(di.files)
@@ -2780,12 +2730,13 @@ albumWithNameTypes = (
                 di = DiskImage( stream=data, tag=path )
                 if acceptedOnly:
                     for u in di.files:
-                        if u.header.className in acceptedTypes:
+                        if makeunicode(u.header.className, 'ascii') in acceptedTypes:
                             result[zfoldername].append( u )
                 else:
                     result[zfoldername].extend( di.files )
         return result
     return result
+
 
 </t>
 <t tx="karstenw.20220612162656.7">class ImageBuffer(list):
@@ -2816,7 +2767,22 @@ except NameError:
 # constants
 #
 
-# unused and incomplete (yet)
+</t>
+<t tx="karstenw.20230112142409.1">#
+# tools
+#
+</t>
+<t tx="karstenw.20230112142616.1"></t>
+<t tx="karstenw.20230112142932.1">#
+# file tools
+#
+
+</t>
+<t tx="karstenw.20230112142942.1">#
+# geos image conversion
+#
+</t>
+<t tx="karstenw.20260331132823.1"># unused and incomplete (yet)
 # intention is to use it with rtf &amp; html conversion
 #
 # for IDs look here https://www.lyonlabs.org/commodore/onrequest/geos/geoFont.pdf
@@ -2860,24 +2826,12 @@ fontmapping = {
     # xx:('Oxford', 'Monotype Tektura'),
 }
 
-c64colors = {
-    0: (0,0,0),
-    1: (255,255,255),
-    2: (0x88,0,0),
-    3: (0xaa,0xff,0xee),
-    4: (0xcc,0x44,0xcc),
-    5: (0x00,0xcc,0x55),
-    6: (0x00,0x00,0xaa),
-    7: (0xee,0xee,0x77),
-    8: (0xdd,0x88,0x55),
-    9: (0x66,0x44,0x00),
-    10: (0xff,0x77,0x77),
-    11: (0x33,0x33,0x33),
-    12: (0x77,0x77,0x77),
-    13: (0xaa,0xff,0x66),
-    14: (0x00,0x88,0xff),
-    15: (0xbb,0xbb,0xbb)
-}
+
+</t>
+<t tx="karstenw.20260331132859.1">#
+# disk image constants
+# 
+
 
 geosFileTypes = {
     0: 'Non-GEOS file',
@@ -2920,13 +2874,68 @@ fourtyEightyFlags = {
 # a lot of names are surrounded by this
 stripchars = bytes( [0, 0xa0] )
 
+# currently accepted GEOS file types for conversion; fonts have their own file type
+acceptedTypes = (
+    'Paint Image V1.0',
+    'Paint Image V1.1',
+    'Paint Image v1.1',
+    
+    'photo album V1.0',
+    'photo album V2.1',
+    
+    'Photo Scrap V1.0',
+    'Photo Scrap V1.1',
+    
+    'Write Image V1.0',
+    'Write Image V1.1',
+    'Write Image V2.0',
+    'Write Image V2.1',
+    
+    'text album  V1.0',
+    'text album  V2.1',
+    
+    'Text  Scrap V1.0',
+    'Text  Scrap V1.1',
+    'Text  Scrap V2.0')
 
-#
-# disk image constants
-# 
+# all the GEOS text file types
+textTypes = (
+    'Write Image V1.0',
+    'Write Image V1.1',
+    'Write Image V2.0',
+    'Write Image V2.1',
+    
+    'text album  V1.0',
+    'text album  V2.1',
+
+    'Text  Scrap V1.0',
+    'Text  Scrap V1.1',
+    'Text  Scrap V2.0')
+
+imageTypes = (
+    'Paint Image V1.0',
+    'Paint Image V1.1',
+    'Paint Image v1.1',
+
+    'photo album V1.0',
+    'photo album V2.1',
+
+    'Photo Scrap V1.0',
+    'Photo Scrap V1.1')
+
+geoWriteVersions = {
+    b'Write Image V1.0': 10,
+    b'Write Image V1.1': 11,
+    b'Write Image V2.0': 20,
+    b'Write Image V2.1': 21}
+
+albumWithNameTypes = (
+    'photo album V2.1',
+    'text album  V2.1')
 
 
-# drive geometries
+</t>
+<t tx="karstenw.20260331132946.1"># drive geometries
 sectorTables = {
     # firstTrack,lastTrack, sectorCount/Track
     '.d64': (
@@ -2954,7 +2963,12 @@ sectorTables = {
             # side 1
             ( 1, 40, 40),
             # side 2
-            (41, 80, 40))
+            (41, 80, 40)),
+    '.d2m': (
+            ( 0,  0,  0),
+            # side 1
+            ( 1, 25, 256),
+            (26, 26,  80))
 }
 
 minMaxTrack = {
@@ -2967,7 +2981,9 @@ extToImagesize = {
     '.d64': ((174848,  683),),
     '.d81': ((819200, 3200),),
     '.d71': ((349696, 1366),
-             (349696+1366, 1366)) }
+             (349696+1366, 1366)),
+    '.d2m': ((6480*256, 6480),)
+}
 
 imagesizeToExt = {
     # filesize, ext, sector count
@@ -2975,7 +2991,9 @@ imagesizeToExt = {
     175531: ( '.d64',  683),
     819200: ( '.d81', 3200),
     349696: ( '.d71', 1366),
-    351062: ( '.d71', 1366)}
+    351062: ( '.d71', 1366),
+   1658880: ( '.d2m', 6480)}
+
 
 dirSectorsForDrives = {
     '.d64': (18, 0),
@@ -2991,6 +3009,26 @@ dirSectorStructures = {
     '.d81': ("&lt;b b  cx  16s 2x 2s x 2s 2x 3x 96s 16x 16s 2x 9x b b 11s 5s 3x 64x",
              "tr sc fmt dnam   dskid dosv power64 geoname dsktr dsksc geoformat geoversion")}
 
+</t>
+<t tx="karstenw.20260331133043.1">c64colors = {
+    0: (0,0,0),
+    1: (255,255,255),
+    2: (0x88,0,0),
+    3: (0xaa,0xff,0xee),
+    4: (0xcc,0x44,0xcc),
+    5: (0x00,0xcc,0x55),
+    6: (0x00,0x00,0xaa),
+    7: (0xee,0xee,0x77),
+    8: (0xdd,0x88,0x55),
+    9: (0x66,0x44,0x00),
+    10: (0xff,0x77,0x77),
+    11: (0x33,0x33,0x33),
+    12: (0x77,0x77,0x77),
+    13: (0xaa,0xff,0x66),
+    14: (0x00,0x88,0xff),
+    15: (0xbb,0xbb,0xbb)
+}
+
 #
 # some image globals
 # 
@@ -3004,14 +3042,6 @@ bgcol = c64colors[15]
 if kwdbg:
     bgcol = c64colors[14]
 
-#
-# create color and bw "empty" image bands for the empty records in a geoPaint file
-#
-
 </t>
-<t tx="karstenw.20230112142409.1"></t>
-<t tx="karstenw.20230112142616.1"></t>
-<t tx="karstenw.20230112142932.1"></t>
-<t tx="karstenw.20230112142942.1"></t>
 </tnodes>
 </leo_file>
