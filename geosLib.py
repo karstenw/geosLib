@@ -87,24 +87,11 @@ fontmapping = {
     # xx:('Oxford', 'Monotype Tektura'),
 }
 
-c64colors = {
-    0: (0,0,0),
-    1: (255,255,255),
-    2: (0x88,0,0),
-    3: (0xaa,0xff,0xee),
-    4: (0xcc,0x44,0xcc),
-    5: (0x00,0xcc,0x55),
-    6: (0x00,0x00,0xaa),
-    7: (0xee,0xee,0x77),
-    8: (0xdd,0x88,0x55),
-    9: (0x66,0x44,0x00),
-    10: (0xff,0x77,0x77),
-    11: (0x33,0x33,0x33),
-    12: (0x77,0x77,0x77),
-    13: (0xaa,0xff,0x66),
-    14: (0x00,0x88,0xff),
-    15: (0xbb,0xbb,0xbb)
-}
+
+#
+# disk image constants
+# 
+
 
 geosFileTypes = {
     0: 'Non-GEOS file',
@@ -146,110 +133,6 @@ fourtyEightyFlags = {
 
 # a lot of names are surrounded by this
 stripchars = bytes( [0, 0xa0] )
-
-
-#
-# disk image constants
-# 
-
-
-# drive geometries
-sectorTables = {
-    # firstTrack,lastTrack, sectorCount/Track
-    '.d64': (
-            ( 0,  0,  0),
-            ( 1, 17, 21),
-            (18, 24, 19),
-            (25, 30, 18),
-            (31, 35, 17)),
-
-    '.d71': (
-            ( 0,  0,  0),
-            # side 1
-            ( 1, 17, 21),
-            (18, 24, 19),
-            (25, 30, 18),
-            (31, 35, 17),
-            # side 2
-            (36, 52, 21),
-            (53, 59, 19),
-            (60, 65, 18),
-            (66, 70, 17)),
-
-    '.d81': (
-            ( 0,  0,  0),
-            # side 1
-            ( 1, 40, 40),
-            # side 2
-            (41, 80, 40))
-}
-
-minMaxTrack = {
-    '.d81': (1,80),
-    '.d71': (1,70),
-    '.d64': (1,35)}
-
-extToImagesize = {
-    # ext, filesize, sector count
-    '.d64': ((174848,  683),),
-    '.d81': ((819200, 3200),),
-    '.d71': ((349696, 1366),
-             (349696+1366, 1366)) }
-
-imagesizeToExt = {
-    # filesize, ext, sector count
-    174848: ( '.d64',  683),
-    175531: ( '.d64',  683),
-    819200: ( '.d81', 3200),
-    349696: ( '.d71', 1366),
-    351062: ( '.d71', 1366)}
-
-dirSectorsForDrives = {
-    '.d64': (18, 0),
-    '.d71': (18, 0),
-    '.d81': (40, 0)}
-
-# TO DO: .D71
-dirSectorStructures = {
-    # the first entry is the struct unpack string
-    # the second entry are names to be attached in a dict
-    '.d64': ("<b b  c      c    140s 16s 2x 2s x   2s 4x b     b     11s       5s 67x", 
-             "tr sc format dosv1 bam dnam   diskid dosv2 dsktr dsksc geoformat geoversion"),
-    '.d81': ("<b b  cx  16s 2x 2s x 2s 2x 3x 96s 16x 16s 2x 9x b b 11s 5s 3x 64x",
-             "tr sc fmt dnam   dskid dosv power64 geoname dsktr dsksc geoformat geoversion")}
-
-#
-# some image globals
-# 
-
-
-# it seems the "official" geoColorChoice is:
-#       fg: color0
-#       bg: color15
-
-bgcol = c64colors[15]
-if kwdbg:
-    bgcol = c64colors[14]
-
-#
-# create color and bw "empty" image bands for the empty records in a geoPaint file
-#
-
-def makeFilledPILImage( w,h, typ, intList ):
-    barray = bytes( intList )
-    return PIL.Image.frombytes(typ, (w,h), barray, decoder_name='raw')
-
-
-# a image band in color (default geos bg color)
-intlist = bytes( [ bgcol[0], bgcol[1], bgcol[2] ] * (640*16) )
-coldummy = makeFilledPILImage(640,16, 'RGB', intlist)
-# coldummy.save("coldummy.png")
-
-intlist = bytes( [ 255 ] * 80 * 16 )
-
-bwdummy = makeFilledPILImage(640,16, '1', intlist)
-# bwdummy.save("bwdummy.png")
-
 
 # currently accepted GEOS file types for conversion; fonts have their own file type
 acceptedTypes = (
@@ -309,6 +192,133 @@ geoWriteVersions = {
 albumWithNameTypes = (
     'photo album V2.1',
     'text album  V2.1')
+
+
+# drive geometries
+sectorTables = {
+    # firstTrack,lastTrack, sectorCount/Track
+    '.d64': (
+            ( 0,  0,  0),
+            ( 1, 17, 21),
+            (18, 24, 19),
+            (25, 30, 18),
+            (31, 35, 17)),
+
+    '.d71': (
+            ( 0,  0,  0),
+            # side 1
+            ( 1, 17, 21),
+            (18, 24, 19),
+            (25, 30, 18),
+            (31, 35, 17),
+            # side 2
+            (36, 52, 21),
+            (53, 59, 19),
+            (60, 65, 18),
+            (66, 70, 17)),
+
+    '.d81': (
+            ( 0,  0,  0),
+            # side 1
+            ( 1, 40, 40),
+            # side 2
+            (41, 80, 40)),
+    '.d2m': (
+            ( 0,  0,  0),
+            # side 1
+            ( 1, 25, 256),
+            (26, 26,  80))
+}
+
+minMaxTrack = {
+    '.d81': (1,80),
+    '.d71': (1,70),
+    '.d64': (1,35)}
+
+extToImagesize = {
+    # ext, filesize, sector count
+    '.d64': ((174848,  683),),
+    '.d81': ((819200, 3200),),
+    '.d71': ((349696, 1366),
+             (349696+1366, 1366)),
+    '.d2m': ((6480*256, 6480),)
+}
+
+imagesizeToExt = {
+    # filesize, ext, sector count
+    174848: ( '.d64',  683),
+    175531: ( '.d64',  683),
+    819200: ( '.d81', 3200),
+    349696: ( '.d71', 1366),
+    351062: ( '.d71', 1366),
+   1658880: ( '.d2m', 6480)}
+
+
+dirSectorsForDrives = {
+    '.d64': (18, 0),
+    '.d71': (18, 0),
+    '.d81': (40, 0)}
+
+# TO DO: .D71
+dirSectorStructures = {
+    # the first entry is the struct unpack string
+    # the second entry are names to be attached in a dict
+    '.d64': ("<b b  c      c    140s 16s 2x 2s x   2s 4x b     b     11s       5s 67x", 
+             "tr sc format dosv1 bam dnam   diskid dosv2 dsktr dsksc geoformat geoversion"),
+    '.d81': ("<b b  cx  16s 2x 2s x 2s 2x 3x 96s 16x 16s 2x 9x b b 11s 5s 3x 64x",
+             "tr sc fmt dnam   dskid dosv power64 geoname dsktr dsksc geoformat geoversion")}
+
+c64colors = {
+    0: (0,0,0),
+    1: (255,255,255),
+    2: (0x88,0,0),
+    3: (0xaa,0xff,0xee),
+    4: (0xcc,0x44,0xcc),
+    5: (0x00,0xcc,0x55),
+    6: (0x00,0x00,0xaa),
+    7: (0xee,0xee,0x77),
+    8: (0xdd,0x88,0x55),
+    9: (0x66,0x44,0x00),
+    10: (0xff,0x77,0x77),
+    11: (0x33,0x33,0x33),
+    12: (0x77,0x77,0x77),
+    13: (0xaa,0xff,0x66),
+    14: (0x00,0x88,0xff),
+    15: (0xbb,0xbb,0xbb)
+}
+
+#
+# some image globals
+# 
+
+
+# it seems the "official" geoColorChoice is:
+#       fg: color0
+#       bg: color15
+
+bgcol = c64colors[15]
+if kwdbg:
+    bgcol = c64colors[14]
+
+#
+# create color and bw "empty" image bands for the empty records in a geoPaint file
+#
+
+def makeFilledPILImage( w,h, typ, intList ):
+    barray = bytes( intList )
+    return PIL.Image.frombytes(typ, (w,h), barray, decoder_name='raw')
+
+
+# a image band in color (default geos bg color)
+intlist = bytes( [ bgcol[0], bgcol[1], bgcol[2] ] * (640*16) )
+coldummy = makeFilledPILImage(640,16, 'RGB', intlist)
+# coldummy.save("coldummy.png")
+
+
+intlist = bytes( [ 255 ] * 80 * 16 )
+
+bwdummy = makeFilledPILImage(640,16, '1', intlist)
+bwdummy.save("bwdummy.png")
 
 #
 # tools
@@ -503,6 +513,10 @@ class ImageBuffer(list):
     def dump(self):
         hexdump( self )
 
+#
+# file tools
+#
+
 def getAlbumNamesChain( vlir ):
     """extract clip names for (Photo|Text) Album V2.x"""
     clipnames = [ "" ] * 127
@@ -540,14 +554,10 @@ def getAlbumNamesChain( vlir ):
                     print()
     return clipnameschain, clipnames
 
-#
-# file tools
-#
 
 #
 # geos image conversion
 #
-
 def expandImageStream( s ):
     """Expand a 640x16 compressed image stream as encountered in geoPaint files."""
 
