@@ -558,20 +558,25 @@ def getAlbumNamesChain( vlir ):
 #
 # geos image conversion
 #
-def expandImageStream( s ):
-    """Expand a 640x16 compressed image stream as encountered in geoPaint files."""
+def expandImageStream( stream ):
+    """Expand a 640x16 compressed image stream as encountered in geoPaint files.
+    
+    Returns a bytearray 
+    """
 
-    n = len(s)
-    j = -1
+    streamlength = len(stream)
+    idx = -1
     # image = ImageBuffer()
     
     image = bytearray(0)
     log = []
-    while j < n-1:
-        j += 1
-        code = s[j]
+    while idx < streamlength-1:
+        idx += 1
+        code = stream[idx]
+        
+        # current collector
         items = bytearray(0)
-        roomleft = (n-1) - j
+        roomleft = (streamlength-1) - idx
         
         if 0: #code == 0:
             break
@@ -581,44 +586,53 @@ def expandImageStream( s ):
                 print("blank code 64,128 encountered.")
                 #pdb.set_trace()
             continue
-
+        
+        # 0 .. 63
         if code < 64:
             if roomleft < 1:
-                j += 1
+                idx += 1
                 continue
-            data = s[j+1:j+code+1]
+            data = stream[idx+1:idx+code+1]
             for i in data:
                 items.append( i )
-            j += len(data)
+            idx += len(data)
             image.extend( items )
             continue
-
+        
+        # 64 .. 127
         elif 64 <= code < 128:
+            # 
             if roomleft < 8:
-                j += 8
+                idx += 8
                 continue
+            
+            # extract count
             c = code & 63
-            pattern = s[j+1:j+9]
-            pn = len(pattern)
-            cnt = pn * c
+            
+            # read pattern ( 8 bytes )
+            pattern = stream[idx+1:idx+9]
+            patternlength = len(pattern)
+            
+            # patternrepeatbytes
+            cnt = patternlength * c
             for i in range(c):
-                for k in range(pn):
+                for k in range(patternlength):
                     p = pattern[k]
                     items.append( p )
-            j += pn
+            idx += patternlength
             image.extend( items )
             continue
 
         elif 128 <= code:
             if roomleft < 1:
-                j += 1
+                idx += 1
                 continue
             c = code - 128
-            data = s[j+1]
+            data = stream[idx+1]
             t = [data] * c
             items = t
             image.extend( items )
-            j += 1
+            idx += 1
             continue
 
         if kwdbg:
@@ -626,56 +640,62 @@ def expandImageStream( s ):
     return image
 
 
-def expandScrapStream( s ):
+def expandScrapStream( stream ):
     """Expand a variable compressed image stream as encountered in 'Photo Album',
-       'Photo Scrap' and geoWrite files."""
-    n = len(s)
-    j = -1
+       'Photo Scrap' and geoWrite files.
+       
+       Returns a bytearray
+       """
+    streamlength = len(stream)
+    idx = -1
     image = bytearray(0)
-    while j < n-1:
-        j += 1
-        code = s[j]
-        roomleft = (n-1) - j
+    while idx < streamlength-1:
+        idx += 1
+        code = stream[idx]
+        roomleft = (streamlength-1) - idx
+
         if code in (0,128,220):
             if kwdbg:
                 print("ILLEGAL OPCODES...")
                 # pdb.set_trace()
                 print
             continue
+        
         elif code < 128:
             if roomleft < 1:
-                j += 1
+                idx += 1
                 continue
-            data = s[j+1]
+            data = stream[idx+1]
             t = [data] * code
             image.extend( t )
-            j += 1
+            idx += 1
             continue
+        
         elif 128 <= code <= 219:
             c = code - 128
             if roomleft < c:
-                j += c
+                idx += c
                 continue
-            data = s[j+1:j+c+1]
+            data = stream[idx+1:idx+c+1]
             for i in data:
                 image.append( i )
-            j += c
+            idx += c
             continue
             
         else:
             # 220...255
             patsize = code -220
             if roomleft < patsize+1:
-                j += patsize+1
+                idx += patsize+1
                 continue
-            repeat = s[j+1]
+            repeat = stream[idx+1]
             size = repeat * patsize
-            pattern = s[j+2:j+2+patsize]
+            pattern = stream[idx+2:idx+2+patsize]
             for i in range( repeat ):
                 for p in pattern:
                     image.append( p )
             
-            j += patsize+1
+            idx += patsize+1
             continue
     return image
 
