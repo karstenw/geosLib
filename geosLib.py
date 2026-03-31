@@ -505,6 +505,14 @@ def hexdump( s, col=32 ):
             sys.stdout.write('\n')
 
 
+def cleanupString( s ):
+    # remove garbage
+    typ = type(s)
+    if typ not in (bytes,bytearray):
+        s = bytes( s )
+    t = s.strip( stripchars )
+    return t.split( bytes( "\x00", "ascii" ))[0]
+
 class ImageBuffer(list):
     """For debugging purposes mostly. Has a built in memory dump in
     monitor format."""
@@ -1709,14 +1717,6 @@ class VLIRFile(object):
         self.filename = ""
         # origin
         self.filepath = ""
-
-def cleanupString( s ):
-    # remove garbage
-    typ = type(s)
-    if typ not in (bytes,bytearray):
-        s = bytes( s )
-    t = s.strip( stripchars )
-    return t.split( bytes( "\x00", "ascii" ))[0]
 
 class GEOSHeaderBlock(object):
 

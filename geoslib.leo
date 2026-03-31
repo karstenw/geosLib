@@ -13,7 +13,7 @@
 <v t="karstenw.20220612162552.1" a="E"><vh>@clean geosLib.py</vh>
 <v t="karstenw.20220612162656.1"><vh>Declarations</vh></v>
 <v t="karstenw.20220612162816.1"><vh>Python3 stuff</vh></v>
-<v t="karstenw.20220612162841.1" a="E"><vh>+ CONSTANTS +</vh>
+<v t="karstenw.20220612162841.1"><vh>+ CONSTANTS +</vh>
 <v t="karstenw.20260331132823.1"><vh>+ FONT +</vh></v>
 <v t="karstenw.20260331132859.1"><vh>+ DOS +</vh></v>
 <v t="karstenw.20260331132946.1"><vh>+ DRIVE +</vh></v>
@@ -26,16 +26,17 @@
 <v t="karstenw.20220612162656.5"><vh>iterateFolders</vh></v>
 <v t="karstenw.20220612162656.6"><vh>getCompressedFile</vh></v>
 <v t="karstenw.20220612162656.10"><vh>hexdump</vh></v>
+<v t="karstenw.20220612162656.37"><vh>cleanupString</vh></v>
 <v t="karstenw.20220612162656.7"><vh>class ImageBuffer</vh>
 <v t="karstenw.20220612162656.8"><vh>__init__</vh></v>
 <v t="karstenw.20220612162656.9"><vh>dump</vh></v>
 </v>
 </v>
-<v t="karstenw.20230112142616.1" a="E"><vh>+ GEOS +</vh>
+<v t="karstenw.20230112142616.1"><vh>+ GEOS +</vh>
 <v t="karstenw.20230112142932.1" a="E"><vh>+ FILE +</vh>
 <v t="karstenw.20220612162656.11"><vh>getAlbumNamesChain</vh></v>
 </v>
-<v t="karstenw.20230112142942.1" a="E"><vh>+ IMAGE +</vh>
+<v t="karstenw.20230112142942.1"><vh>+ IMAGE +</vh>
 <v t="karstenw.20220612162656.12"><vh>expandImageStream</vh></v>
 <v t="karstenw.20220612162656.13"><vh>expandScrapStream</vh></v>
 <v t="karstenw.20220612162656.14"><vh>photoScrap</vh></v>
@@ -44,6 +45,8 @@
 <v t="karstenw.20220612162656.17"><vh>convertGeoPaintFile</vh></v>
 <v t="karstenw.20220612162656.18"><vh>convertPhotoAlbumFile</vh></v>
 <v t="karstenw.20220612162656.19"><vh>convertPhotoScrapFile</vh></v>
+</v>
+<v t="karstenw.20260331135902.1"><vh>+ GEOWRITE CONVERSIONS +</vh>
 <v t="karstenw.20220612162656.20"><vh>class ItemCollector</vh>
 <v t="karstenw.20220612162656.21"><vh>__init__</vh></v>
 <v t="karstenw.20220612162656.22"><vh>initDoc</vh></v>
@@ -56,26 +59,26 @@
 <v t="karstenw.20220612162656.29"><vh>getFontID</vh></v>
 <v t="karstenw.20220612162656.30"><vh>rtfFontDict</vh></v>
 </v>
-</v>
 <v t="karstenw.20220612162656.31"><vh>getGeoWriteStream</vh></v>
 <v t="karstenw.20220612162656.32"><vh>convertWriteImage</vh></v>
-<v t="karstenw.20220612162656.33" a="E"><vh>class CBMConvertFile</vh>
+</v>
+<v t="karstenw.20260331140048.1"><vh>+ DISK IMAGE +</vh>
+<v t="karstenw.20220612162656.33"><vh>class CBMConvertFile</vh>
 <v t="karstenw.20220612162656.34"><vh>__init__</vh></v>
 </v>
-<v t="karstenw.20220612162656.35" a="E"><vh>class VLIRFile</vh>
+<v t="karstenw.20220612162656.35"><vh>class VLIRFile</vh>
 <v t="karstenw.20220612162656.36"><vh>__init__</vh></v>
 </v>
-<v t="karstenw.20220612162656.37"><vh>cleanupString</vh></v>
-<v t="karstenw.20220612162656.38" a="E"><vh>class GEOSHeaderBlock</vh>
+<v t="karstenw.20220612162656.38"><vh>class GEOSHeaderBlock</vh>
 <v t="karstenw.20220612162656.39"><vh>__init__</vh></v>
 <v t="karstenw.20220612162656.40"><vh>prnt</vh></v>
 </v>
-<v t="karstenw.20220612162656.41" a="E"><vh>class GEOSDirEntry</vh>
+<v t="karstenw.20220612162656.41"><vh>class GEOSDirEntry</vh>
 <v t="karstenw.20220612162656.42"><vh>__init__</vh></v>
 <v t="karstenw.20220612162656.43"><vh>prnt</vh></v>
 <v t="karstenw.20220612162656.44"><vh>smallprnt</vh></v>
 </v>
-<v t="karstenw.20220612162656.45" a="E"><vh>class DiskImage</vh>
+<v t="karstenw.20220612162656.45"><vh>class DiskImage</vh>
 <v t="karstenw.20220612162656.46"><vh>getTrackOffsetList</vh></v>
 <v t="karstenw.20220612162656.47"><vh>readfile</vh></v>
 <v t="karstenw.20220612162656.48"><vh>getTS</vh></v>
@@ -84,11 +87,14 @@
 <v t="karstenw.20220612162656.51"><vh>printDirectory</vh></v>
 <v t="karstenw.20220612162656.52"><vh>__init__</vh></v>
 </v>
+</v>
+<v t="karstenw.20260331140104.1"><vh>+ FONT +</vh>
 <v t="karstenw.20220612162656.53"><vh>class FontRecord</vh>
 <v t="karstenw.20220612162656.54"><vh>__init__</vh></v>
 </v>
 <v t="karstenw.20220612162656.55"><vh>getFontChain</vh></v>
 <v t="karstenw.20220612162656.56"><vh>convertFontFile</vh></v>
+</v>
 </v>
 </v>
 <v t="karstenw.20220612162605.1"><vh>@clean macpaintLib.py</vh>
@@ -1292,10 +1298,6 @@ kwlog = 0
             if not os.path.exists( of ):
                 bw.save( of )
 
-
-#
-# geoWrite conversion tools
-#
 
 </t>
 <t tx="karstenw.20220612162656.2">#
@@ -3063,5 +3065,12 @@ if kwdbg:
     bgcol = c64colors[14]
 
 </t>
+<t tx="karstenw.20260331135902.1">#
+# geoWrite conversion tools
+#
+
+</t>
+<t tx="karstenw.20260331140048.1"></t>
+<t tx="karstenw.20260331140104.1"></t>
 </tnodes>
 </leo_file>
