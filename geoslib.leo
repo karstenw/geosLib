@@ -13,14 +13,15 @@
 <v t="karstenw.20220612162552.1" a="E"><vh>@clean geosLib.py</vh>
 <v t="karstenw.20220612162656.1"><vh>Declarations</vh></v>
 <v t="karstenw.20220612162816.1"><vh>Python3 stuff</vh></v>
-<v t="karstenw.20220612162841.1"><vh>+ CONSTANTS +</vh>
+<v t="karstenw.20220612162841.1" a="E"><vh>+ CONSTANTS +</vh>
 <v t="karstenw.20260331132823.1"><vh>+ FONT +</vh></v>
-<v t="karstenw.20260331132859.1"><vh>+ DOS +</vh></v>
+<v t="karstenw.20260331132859.1"><vh>+ FILE TYPES +</vh></v>
 <v t="karstenw.20260331132946.1"><vh>+ DRIVE +</vh></v>
 <v t="karstenw.20260331133043.1"><vh>+ COLORS +</vh></v>
+<v t="karstenw.20260402132956.1"><vh>+ IMAGE +</vh></v>
 </v>
 <v t="karstenw.20220612162656.2"><vh>makeFilledPILImage</vh></v>
-<v t="karstenw.20230112142409.1"><vh>+ TOOLS +</vh>
+<v t="karstenw.20230112142409.1" a="E"><vh>+ TOOLS +</vh>
 <v t="karstenw.20220612162656.3"><vh>datestring</vh></v>
 <v t="karstenw.20220612162656.4"><vh>makeunicode</vh></v>
 <v t="karstenw.20220612162656.5"><vh>iterateFolders</vh></v>
@@ -32,11 +33,11 @@
 <v t="karstenw.20220612162656.9"><vh>dump</vh></v>
 </v>
 </v>
-<v t="karstenw.20230112142616.1"><vh>+ GEOS +</vh>
+<v t="karstenw.20230112142616.1" a="E"><vh>+ GEOS +</vh>
 <v t="karstenw.20230112142932.1" a="E"><vh>+ FILE +</vh>
 <v t="karstenw.20220612162656.11"><vh>getAlbumNamesChain</vh></v>
 </v>
-<v t="karstenw.20230112142942.1"><vh>+ IMAGE +</vh>
+<v t="karstenw.20230112142942.1" a="E"><vh>+ IMAGE +</vh>
 <v t="karstenw.20220612162656.12"><vh>expandImageStream</vh></v>
 <v t="karstenw.20220612162656.13"><vh>expandScrapStream</vh></v>
 <v t="karstenw.20220612162656.14"><vh>photoScrap</vh></v>
@@ -62,14 +63,14 @@
 <v t="karstenw.20220612162656.31"><vh>getGeoWriteStream</vh></v>
 <v t="karstenw.20220612162656.32"><vh>convertWriteImage</vh></v>
 </v>
-<v t="karstenw.20260331140048.1"><vh>+ DISK IMAGE +</vh>
+<v t="karstenw.20260331140048.1" a="E"><vh>+ DISK IMAGE +</vh>
 <v t="karstenw.20220612162656.33"><vh>class CBMConvertFile</vh>
 <v t="karstenw.20220612162656.34"><vh>__init__</vh></v>
 </v>
 <v t="karstenw.20220612162656.35"><vh>class VLIRFile</vh>
 <v t="karstenw.20220612162656.36"><vh>__init__</vh></v>
 </v>
-<v t="karstenw.20220612162656.38"><vh>class GEOSHeaderBlock</vh>
+<v t="karstenw.20220612162656.38" a="E"><vh>class GEOSHeaderBlock</vh>
 <v t="karstenw.20220612162656.39"><vh>__init__</vh></v>
 <v t="karstenw.20220612162656.40"><vh>prnt</vh></v>
 </v>
@@ -78,7 +79,7 @@
 <v t="karstenw.20220612162656.43"><vh>prnt</vh></v>
 <v t="karstenw.20220612162656.44"><vh>smallprnt</vh></v>
 </v>
-<v t="karstenw.20220612162656.45"><vh>class DiskImage</vh>
+<v t="karstenw.20220612162656.45" a="E"><vh>class DiskImage</vh>
 <v t="karstenw.20220612162656.46"><vh>getTrackOffsetList</vh></v>
 <v t="karstenw.20220612162656.47"><vh>readfile</vh></v>
 <v t="karstenw.20220612162656.48"><vh>getTS</vh></v>
@@ -88,7 +89,7 @@
 <v t="karstenw.20220612162656.52"><vh>__init__</vh></v>
 </v>
 </v>
-<v t="karstenw.20260331140104.1"><vh>+ FONT +</vh>
+<v t="karstenw.20260331140104.1" a="E"><vh>+ FONT +</vh>
 <v t="karstenw.20220612162656.53"><vh>class FontRecord</vh>
 <v t="karstenw.20220612162656.54"><vh>__init__</vh></v>
 </v>
@@ -114,6 +115,15 @@
 <v t="karstenw.20220612162628.1"><vh>@clean README.md</vh></v>
 <v t="karstenw.20220612162635.1"><vh>@clean setup.py</vh>
 <v t="karstenw.20220612162652.1"><vh>Declarations</vh></v>
+</v>
+<v t="karstenw.20260403150017.1" a="E"><vh>examples</vh>
+<v t="karstenw.20260403150022.1"><vh>@clean examples/c64ColorsPNG.py</vh>
+<v t="karstenw.20260403150108.1"><vh>Declarations</vh></v>
+</v>
+<v t="karstenw.20260403150244.1" a="E"><vh>@clean examples/geosConvertAll.py</vh>
+<v t="karstenw.20260403150255.1"><vh>Declarations</vh></v>
+<v t="karstenw.20260403150923.1"><vh>__main__</vh></v>
+</v>
 </v>
 </v>
 </vnodes>
@@ -1304,21 +1314,22 @@ kwlog = 0
 # create color and bw "empty" image bands for the empty records in a geoPaint file
 #
 
-def makeFilledPILImage( w,h, typ, intList ):
-    barray = bytes( intList )
-    return PIL.Image.frombytes(typ, (w,h), barray, decoder_name='raw')
+def makeFilledPILImage( w,h, typ, rawbytes ):
+    return PIL.Image.frombytes(typ, (w,h), bytes(rawbytes), decoder_name='raw')
 
 
 # a image band in color (default geos bg color)
-intlist = bytes( [ bgcol[0], bgcol[1], bgcol[2] ] * (640*16) )
-coldummy = makeFilledPILImage(640,16, 'RGB', intlist)
-# coldummy.save("coldummy.png")
+coldummy = makeFilledPILImage( gppixelwidth, gpbandheightpixels, 'RGB',
+                               bytes( [ *bgcol ] * gpbandsizepixels ))
+if kwdbg:
+    coldummy.save("coldummy.png")
 
 
-intlist = bytes( [ 255 ] * 80 * 16 )
+bwdummy = makeFilledPILImage(gppixelwidth, gpbandheightpixels, '1',
+                             bytes( [ 255 ] * gpbandsizebytes ))
+if kwdbg:
+    bwdummy.save("bwdummy.png")
 
-bwdummy = makeFilledPILImage(640,16, '1', intlist)
-bwdummy.save("bwdummy.png")
 
 </t>
 <t tx="karstenw.20220612162656.20">class ItemCollector(object):
@@ -1966,12 +1977,14 @@ bwdummy.save("bwdummy.png")
 
 </t>
 <t tx="karstenw.20220612162656.37">def cleanupString( s ):
-    # remove garbage
+    """Remove garbage from a bytestring and split it at 0-bytes."""
+    
     typ = type(s)
     if typ not in (bytes,bytearray):
         s = bytes( s )
-    t = s.strip( stripchars )
-    return t.split( bytes( "\x00", "ascii" ))[0]
+    s = s.strip( stripchars )
+    return s.split( bytes( "\x00", "ascii" ))[0]
+
 
 </t>
 <t tx="karstenw.20220612162656.38">class GEOSHeaderBlock(object):
@@ -2237,12 +2250,13 @@ bwdummy.save("bwdummy.png")
 <t tx="karstenw.20220612162656.45">class DiskImage(object):
 
     @others
-# UNUSED
 </t>
 <t tx="karstenw.20220612162656.46">def getTrackOffsetList(self, sizelist ):
-    """calculate sectorOffset per Track, track Byte offstes and
-       sectors per track lists."""
-
+    """calculate
+        - sectorOffset per Track, [0,21,42,...]
+        - track Byte offstes and  [0, 5376, 10752,..]
+        - sectors per track lists.[0, 21, 21, 21,..] """
+    
     offset = 0
     sectorsize=256
     sectorOffsets = []
@@ -2259,6 +2273,7 @@ bwdummy.save("bwdummy.png")
                 continue
             trackByteOffsets.append( (sectorOffsets[track-1]) * sectorsize )
     return sectorOffsets, trackByteOffsets, sectorsPerTrack
+
 
 </t>
 <t tx="karstenw.20220612162656.47">def readfile( self, path):
@@ -2296,44 +2311,50 @@ bwdummy.save("bwdummy.png")
 
 </t>
 <t tx="karstenw.20220612162656.49">def getChain(self, t, s):
+    """Get a CBM track/sector chain as a binary string."""
+    
     error = ""
-    readSoFar = set()
+    trackSectorReadSoFar = set()
     # pdb.set_trace()
     result = []
     tr, sc = t, s
-    blocks = 0
     while True:
-        blocks += 1
-        err, b = self.getTS(tr, sc)
-        readSoFar.add( (tr,sc) )
+        err, block = self.getTS(tr, sc)
+        trackSectorReadSoFar.add( (tr,sc) )
         if err != "":
             s = ''.join( result )
             return err, s
-        if len(b) &lt;= 2:
+        
+        if len(block) &lt;= 2:
             # pdb.set_trace()
             break
-        tr = int(b[0])
-        sc = int(b[1])
+        tr = int(block[0])
+        sc = int(block[1])
+        
         if tr == 0:
-            result.append( b[2:sc+1] )
+            result.append( block[2:sc+1] )
             break
-        elif (tr,sc) in readSoFar:
+        
+        elif (tr,sc) in trackSectorReadSoFar:
             # circular link
             # pdb.set_trace()
-            if len(b) &gt; 2:
-                result.append( b[2:] )
+            if len(block) &gt; 2:
+                result.append( block[2:] )
             break
         elif tr &gt; 80:
             break
         else:
-            result.append( b[2:] )
+            result.append( block[2:] )
     return error, b''.join( result )
 
 </t>
 <t tx="karstenw.20220612162656.5">def iterateFolders( infolder, validExtensions=('.d64', '.d71', '.d81',
                                                '.zip', '.gz',  '.cvt',
                                                '.prg', '.seq') ):
-    """Iterator that walks a folder and returns all files."""
+    """Iterator that walks a folder and returns all files.
+    
+    
+    """
     
     # for folder in dirs:
     lastfolder = ""
@@ -2380,7 +2401,7 @@ bwdummy.save("bwdummy.png")
                 typ = '.cvt'
 
             if kwlog or 1:
-                print("FILE: %s" % filepath)
+                print("iterateFolders(9 YIELD FILE: %s" % filepath)
             yield typ, filepath
 
 
@@ -2432,7 +2453,7 @@ bwdummy.save("bwdummy.png")
 
 </t>
 <t tx="karstenw.20220612162656.52">def __init__(self, stream=None, filepath=None, tag=""):
-    
+    # pdb.set_trace()    
     # alternate path for streams
     self.tag = tag
     self.filepath = ""
@@ -2546,7 +2567,8 @@ bwdummy.save("bwdummy.png")
             self.printDirectory()
 
 </t>
-<t tx="karstenw.20220612162656.53">class FontRecord(object):
+<t tx="karstenw.20220612162656.53"># UNUSED
+class FontRecord(object):
     @others
 </t>
 <t tx="karstenw.20220612162656.54">def __init__(self, s, name, vlirIndex):
@@ -2578,9 +2600,10 @@ bwdummy.save("bwdummy.png")
     #  4 - rel pointer to index table
     #  6 - rel pointer to character
     
+    falseResult = False, False
     
     if len(s) &lt; 8:
-        return False, False
+        return falseResult
     
     uname = makeunicode(name)
     
@@ -2602,12 +2625,12 @@ bwdummy.save("bwdummy.png")
     bitstreamTableSize = fontHeight * bitstreamRowLength
     
     if len(bitstreamTable) == 0:
-        return False, False
+        return falseResult
 
     if (    fontHeight == 0
          or indextableOffset == 0
          or bitstreamOffset == 0):
-        return False, False
+        return falseResult
     
     if len(bitstreamTable) != bitstreamTableSize:
         print("SIZE MISMATCH:")
@@ -2697,7 +2720,10 @@ bwdummy.save("bwdummy.png")
             if not os.path.exists( path ):
                 bw.save( path )
 </t>
-<t tx="karstenw.20220612162656.6">def getCompressedFile( path, acceptedOnly=False ):
+<t tx="karstenw.20220612162656.6"># This is the result of a weekend hack.
+# Diskimages should be returnerd as such
+# contained files should be returned as CBMConvertFile or VLIRFile
+def getCompressedFile( path, acceptedOnly=False ):
     """Open a gzip or zip compressed file. Return the GEOS and c64 files in
     contained disk image(s)
     
@@ -2729,6 +2755,7 @@ bwdummy.save("bwdummy.png")
             else:
                 result[foldername].extend(di.files)
             return result
+    
     elif ext.lower() == '.zip':
         foldername = basename + '_zip'
         try:
@@ -2996,10 +3023,11 @@ sectorTables = {
 minMaxTrack = {
     '.d81': (1,80),
     '.d71': (1,70),
-    '.d64': (1,35)}
+    '.d64': (1,35),
+    '.d2m': (1,26)}
 
 extToImagesize = {
-    # ext, filesize, sector count
+    # ext, filesize, sector count (256 bytes)
     '.d64': ((174848,  683),),
     '.d81': ((819200, 3200),),
     '.d71': ((349696, 1366),
@@ -3032,37 +3060,26 @@ dirSectorStructures = {
              "tr sc fmt dnam   dskid dosv power64 geoname dsktr dsksc geoformat geoversion")}
 
 </t>
-<t tx="karstenw.20260331133043.1">c64colors = {
-    0: (0,0,0),
-    1: (255,255,255),
-    2: (0x88,0,0),
-    3: (0xaa,0xff,0xee),
-    4: (0xcc,0x44,0xcc),
-    5: (0x00,0xcc,0x55),
-    6: (0x00,0x00,0xaa),
-    7: (0xee,0xee,0x77),
-    8: (0xdd,0x88,0x55),
-    9: (0x66,0x44,0x00),
-    10: (0xff,0x77,0x77),
-    11: (0x33,0x33,0x33),
-    12: (0x77,0x77,0x77),
-    13: (0xaa,0xff,0x66),
-    14: (0x00,0x88,0xff),
-    15: (0xbb,0xbb,0xbb)
+<t tx="karstenw.20260331133043.1"># there should also be a dict with names...
+c64colors = {
+    
+    0: (0,0,0),             # black
+    1: (255,255,255),       # white
+    2: (0x88,0,0),          # red
+    3: (0xaa,0xff,0xee),    # cyan
+    4: (0xcc,0x44,0xcc),    # purple
+    5: (0x00,0xcc,0x55),    # green
+    6: (0x00,0x00,0xaa),    # blue
+    7: (0xee,0xee,0x77),    # yellow
+    8: (0xdd,0x88,0x55),    # orange
+    9: (0x66,0x44,0x00),    # brown
+    10: (0xff,0x77,0x77),   # pink
+    11: (0x33,0x33,0x33),   # dark grey
+    12: (0x77,0x77,0x77),   # grey
+    13: (0xaa,0xff,0x66),   # light green
+    14: (0x00,0x88,0xff),   # light blue
+    15: (0xbb,0xbb,0xbb)    # light grey
 }
-
-#
-# some image globals
-# 
-
-
-# it seems the "official" geoColorChoice is:
-#       fg: color0
-#       bg: color15
-
-bgcol = c64colors[15]
-if kwdbg:
-    bgcol = c64colors[14]
 
 </t>
 <t tx="karstenw.20260331135902.1">#
@@ -3072,5 +3089,305 @@ if kwdbg:
 </t>
 <t tx="karstenw.20260331140048.1"></t>
 <t tx="karstenw.20260331140104.1"></t>
+<t tx="karstenw.20260402132956.1">#
+# some image globals
+# 
+
+gpcardswide = 80
+gppixelwidth = gpcardswide * 8
+
+gpcardsheight = 90
+gppixelheight = gpcardsheight * 8
+
+gpbandheightcards = 2
+gpbandheightpixels =  gpbandheightcards * 8
+
+gpbandsizebytes = gpbandheightpixels * gpcardswide
+gpbandsizepixels = gppixelwidth * gpbandheightpixels
+
+# every pixel == 3 bytes
+gpbandsizeRGB = gpbandsizebytes * 8 * 3
+
+# it seems the "official" geoColorChoice is:
+#       fg: color0 - black
+#       bg: color15 - gray3
+
+bgcol = c64colors[15]
+if kwdbg:
+    bgcol = c64colors[14] # light blue
+
+
+</t>
+<t tx="karstenw.20260403150017.1"></t>
+<t tx="karstenw.20260403150022.1">@others
+@language python
+@tabwidth -4
+
+if __name__ == '__main__':
+    # make an image with the c64 colors
+    import PIL
+    import PIL.Image
+    import PIL.ImageDraw
+
+    tilewidth = imagesize &gt;&gt; 2
+    c64colrect = PIL.Image.new('RGB', (imagesize,imagesize), (1,1,1))
+    draw = PIL.ImageDraw.Draw( c64colrect )
+    for y in range(4):
+        for x in range(4):
+            col = y * 4 + x
+            xc = x * tilewidth
+            yc = y * tilewidth
+            col = geosLib.c64colors[col]
+            draw.rectangle((xc,yc,xc+tilewidth,yc+tilewidth), fill=col, outline=None)
+        
+    c64colrect.save("C64 colors.png")
+</t>
+<t tx="karstenw.20260403150108.1"># -*- coding: utf-8 -*-
+
+"""Create a PNG with the C64 colors."""
+
+from __future__ import print_function
+
+
+
+import sys
+import os
+import datetime
+import struct
+
+import pprint
+pp = pprint.pprint
+
+
+import pdb
+kwdbg = 0
+kwlog = 0
+
+import geosLib
+
+imagesize = 256
+
+</t>
+<t tx="karstenw.20260403150244.1">@language python
+@tabwidth -4
+@others
+
+</t>
+<t tx="karstenw.20260403150255.1"># -*- coding: utf-8 -*-
+
+from __future__ import print_function
+
+import sys
+import os
+# sys.path.insert(0, os.path.abspath( os.path.join("..","..") ))
+sys.path.insert(0, os.path.abspath( ".." ) )
+
+import struct
+import gzip, zipfile
+
+import unicodedata
+
+import pdb
+kwdbg = 1
+kwlog = 1
+
+import pprint
+pp = pprint.pprint
+
+import geosLib
+geosLib.kwdbg = kwdbg
+geosLib.kwlog = kwlog
+
+GEOSDirEntry = geosLib.GEOSDirEntry
+GEOSHeaderBlock = geosLib.GEOSHeaderBlock
+VLIRFile = geosLib.VLIRFile
+CBMConvertFile = geosLib.CBMConvertFile
+hexdump = geosLib.hexdump
+DiskImage = geosLib.DiskImage
+imagesizeToExt = geosLib.imagesizeToExt
+filetypesWithAuthor = geosLib.filetypesWithAuthor
+programTypes = geosLib.programTypes
+
+convertGeoPaintFile = geosLib.convertGeoPaintFile
+convertPhotoScrapFile = geosLib.convertPhotoScrapFile
+convertPhotoAlbumFile = geosLib.convertPhotoAlbumFile
+convertWriteImage = geosLib.convertWriteImage
+acceptedTypes = geosLib.acceptedTypes
+textTypes = geosLib.textTypes
+
+makeunicode = geosLib.makeunicode
+iterateFolders = geosLib.iterateFolders
+getCompressedFile = geosLib.getCompressedFile
+
+convertFontFile = geosLib.convertFontFile
+
+exportFolder = os.path.abspath("./geosExports")
+fontExportFolder = os.path.abspath("./geosFonts")
+
+
+</t>
+<t tx="karstenw.20260403150923.1">if __name__ == '__main__':
+
+    # collect some stats - not yet used
+    geosClasses = set()
+    geosApplications = set()
+    geosAuthors = set()
+    
+    images = 0
+    cvtfiles = 0
+    compressedImages = 0
+    
+    totalCBMFiles = 0
+    
+    fileTree = {}
+
+    for fullpath in sys.argv[1:]:
+
+        fullpath = os.path.abspath(os.path.expanduser(fullpath))
+        folder, filename = os.path.split( fullpath )
+        basename, ext = os.path.splitext( filename )
+        dummy, parentFolder = os.path.split( folder )
+
+        basefolder = os.path.join( exportFolder, parentFolder )
+        
+        if 1:
+            print( "\n\n\n" )
+            print( "#" * 120 )
+            print()
+            print( "SOURCE: %s" % fullpath )
+            print( "-" * 120)
+            print()
+
+        isdir = False
+        if os.path.isdir(fullpath):
+            files = iterateFolders( fullpath )
+            isdir = True
+        else:
+            # make a file behave like it came from the iterator
+            typ = ext.lower()
+            files = [ (typ,fullpath) ]
+        
+        for typ, path in files:
+            
+            # extract relpath
+            relpath = path.replace( fullpath, "" )
+            if relpath and relpath[0] == "/":
+                relpath = relpath[1:]
+            
+            result = []
+            if typ in ('.gz', '.zip'):
+                # perhaps compressed image
+                data = getCompressedFile(path)
+                if data:
+                    compressedImages += 1
+                    result.append( data )
+                    #for item in data:
+                    #    result.append( {'': item} )
+
+            elif typ in ('.d64', '.d81'):
+                images += 1
+                data = DiskImage( filepath=path )
+                # pdb.set_trace()
+                n = basename + typ.replace('.', '_')
+                d = {n: []}
+                for u in data.files:
+                    if u.header:
+                        uclassname = ""
+                        try:
+                            uclassname = makeunicode(u.header.className, 'ascii')
+                        except Exception as err:
+                            # print( err )
+                            uclassname = repr( u.header.className )
+                        
+                        if uclassname in acceptedTypes:
+                            d[n].append( u )
+                        elif u.dirEntry.geosFileType == 8:
+                            d[n].append( u )
+                result.append( d )
+            else:
+                # elif typ == '.cvt':
+                # pdb.set_trace()
+                #data = CBMConvertFile( path )
+                #d = {'': [data.vlir]}
+                #result.append( d )
+                #cvtfiles += 1
+                # elif typ == '.seq':
+                # pdb.set_trace()
+                
+                data = CBMConvertFile( path )
+                d = {'': [data.vlir]}
+                result.append( d )
+                cvtfiles += 1
+                
+                # check for cvt without extension here
+                # check sda, arc, ark...
+                # pass
+            
+            
+            pdb.set_trace()
+            
+            for item in result:
+                print("ITEM:", item)
+                for fld in item:
+                    print("    FLD:", fld)
+                    for cbmfile in item[fld]:
+                        print("        cbmfile:", cbmfile)
+                        if kwdbg or 1:
+                            print(cbmfile.dirEntry.fileName)
+                            # pdb.set_trace()
+                            print()
+
+                        if cbmfile.header == "":
+                            continue
+                        try:
+                            gde = cbmfile.dirEntry
+                        except AttributeError as err:
+                            print(err)
+                            # pdb.set_trace()
+                            print()
+                        gde.smallprnt()
+
+                        if gde.isGEOSFile:
+                            gfh = cbmfile.header
+                            target = os.path.join( basefolder, fld)
+                            # target = basefolder
+
+                            done = False
+                            uclassname = ""
+                            try:
+                                uclassname = makeunicode( gfh.className, 'ascii')
+                            except Exception as err:
+                                # print( err )
+                                uclassname = repr( u.header.className )
+
+                            if uclassname.startswith( "Paint Image V"):
+                                convertGeoPaintFile( cbmfile, target )
+                                done = True
+                            
+                            elif uclassname.startswith( "photo album V"):
+                                #pdb.set_trace()
+                                convertPhotoAlbumFile( cbmfile, target )
+                                done = True
+                            
+                            elif uclassname.startswith( "Photo Scrap V"):
+                                convertPhotoScrapFile( cbmfile, target )
+                                done = True
+                            
+                            elif uclassname in textTypes:
+                                # pdb.set_trace()
+                                convertWriteImage( cbmfile, target )
+                                done = True
+
+                            elif gfh.geosFileType == 8:
+                                # font file
+                                # ATTENTION: exports all in one folder!
+                                convertFontFile(cbmfile, fontExportFolder)
+                                done = True
+
+                            if done and kwlog:
+                                gde.prnt()
+                                gfh.prnt()
+                                print('-' * 80)
+</t>
 </tnodes>
 </leo_file>
