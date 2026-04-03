@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 
 """Create a PNG with the C64 colors."""
@@ -23,6 +22,7 @@ kwlog = 0
 import geosLib
 
 imagesize = 256
+
 
 if __name__ == '__main__':
     # make an image with the c64 colors
