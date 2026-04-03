@@ -233,10 +233,11 @@ sectorTables = {
 minMaxTrack = {
     '.d81': (1,80),
     '.d71': (1,70),
-    '.d64': (1,35)}
+    '.d64': (1,35),
+    '.d2m': (1,26)}
 
 extToImagesize = {
-    # ext, filesize, sector count
+    # ext, filesize, sector count (256 bytes)
     '.d64': ((174848,  683),),
     '.d81': ((819200, 3200),),
     '.d71': ((349696, 1366),
@@ -268,57 +269,75 @@ dirSectorStructures = {
     '.d81': ("<b b  cx  16s 2x 2s x 2s 2x 3x 96s 16x 16s 2x 9x b b 11s 5s 3x 64x",
              "tr sc fmt dnam   dskid dosv power64 geoname dsktr dsksc geoformat geoversion")}
 
+# there should also be a dict with names...
 c64colors = {
-    0: (0,0,0),
-    1: (255,255,255),
-    2: (0x88,0,0),
-    3: (0xaa,0xff,0xee),
-    4: (0xcc,0x44,0xcc),
-    5: (0x00,0xcc,0x55),
-    6: (0x00,0x00,0xaa),
-    7: (0xee,0xee,0x77),
-    8: (0xdd,0x88,0x55),
-    9: (0x66,0x44,0x00),
-    10: (0xff,0x77,0x77),
-    11: (0x33,0x33,0x33),
-    12: (0x77,0x77,0x77),
-    13: (0xaa,0xff,0x66),
-    14: (0x00,0x88,0xff),
-    15: (0xbb,0xbb,0xbb)
+    
+    0: (0,0,0),             # black
+    1: (255,255,255),       # white
+    2: (0x88,0,0),          # red
+    3: (0xaa,0xff,0xee),    # cyan
+    4: (0xcc,0x44,0xcc),    # purple
+    5: (0x00,0xcc,0x55),    # green
+    6: (0x00,0x00,0xaa),    # blue
+    7: (0xee,0xee,0x77),    # yellow
+    8: (0xdd,0x88,0x55),    # orange
+    9: (0x66,0x44,0x00),    # brown
+    10: (0xff,0x77,0x77),   # pink
+    11: (0x33,0x33,0x33),   # dark grey
+    12: (0x77,0x77,0x77),   # grey
+    13: (0xaa,0xff,0x66),   # light green
+    14: (0x00,0x88,0xff),   # light blue
+    15: (0xbb,0xbb,0xbb)    # light grey
 }
 
 #
 # some image globals
 # 
 
+gpcardswide = 80
+gppixelwidth = gpcardswide * 8
+
+gpcardsheight = 90
+gppixelheight = gpcardsheight * 8
+
+gpbandheightcards = 2
+gpbandheightpixels =  gpbandheightcards * 8
+
+gpbandsizebytes = gpbandheightpixels * gpcardswide
+gpbandsizepixels = gppixelwidth * gpbandheightpixels
+
+# every pixel == 3 bytes
+gpbandsizeRGB = gpbandsizebytes * 8 * 3
 
 # it seems the "official" geoColorChoice is:
-#       fg: color0
-#       bg: color15
+#       fg: color0 - black
+#       bg: color15 - gray3
 
 bgcol = c64colors[15]
 if kwdbg:
-    bgcol = c64colors[14]
+    bgcol = c64colors[14] # light blue
+
 
 #
 # create color and bw "empty" image bands for the empty records in a geoPaint file
 #
 
-def makeFilledPILImage( w,h, typ, intList ):
-    barray = bytes( intList )
-    return PIL.Image.frombytes(typ, (w,h), barray, decoder_name='raw')
+def makeFilledPILImage( w,h, typ, rawbytes ):
+    return PIL.Image.frombytes(typ, (w,h), bytes(rawbytes), decoder_name='raw')
 
 
 # a image band in color (default geos bg color)
-intlist = bytes( [ bgcol[0], bgcol[1], bgcol[2] ] * (640*16) )
-coldummy = makeFilledPILImage(640,16, 'RGB', intlist)
-# coldummy.save("coldummy.png")
+coldummy = makeFilledPILImage( gppixelwidth, gpbandheightpixels, 'RGB',
+                               bytes( [ *bgcol ] * gpbandsizepixels ))
+if kwdbg:
+    coldummy.save("coldummy.png")
 
 
-intlist = bytes( [ 255 ] * 80 * 16 )
+bwdummy = makeFilledPILImage(gppixelwidth, gpbandheightpixels, '1',
+                             bytes( [ 255 ] * gpbandsizebytes ))
+if kwdbg:
+    bwdummy.save("bwdummy.png")
 
-bwdummy = makeFilledPILImage(640,16, '1', intlist)
-bwdummy.save("bwdummy.png")
 
 #
 # tools
@@ -346,7 +365,10 @@ def makeunicode(s, srcencoding="utf-8", normalizer="NFC"):
 def iterateFolders( infolder, validExtensions=('.d64', '.d71', '.d81',
                                                '.zip', '.gz',  '.cvt',
                                                '.prg', '.seq') ):
-    """Iterator that walks a folder and returns all files."""
+    """Iterator that walks a folder and returns all files.
+    
+    
+    """
     
     # for folder in dirs:
     lastfolder = ""
@@ -393,10 +415,13 @@ def iterateFolders( infolder, validExtensions=('.d64', '.d71', '.d81',
                 typ = '.cvt'
 
             if kwlog or 1:
-                print("FILE: %s" % filepath)
+                print("iterateFolders() YIELD FILE: %s" % filepath)
             yield typ, filepath
 
 
+# This is the result of a weekend hack.
+# Diskimages should be returnerd as such
+# contained files should be returned as CBMConvertFile or VLIRFile
 def getCompressedFile( path, acceptedOnly=False ):
     """Open a gzip or zip compressed file. Return the GEOS and c64 files in
     contained disk image(s)
@@ -429,6 +454,7 @@ def getCompressedFile( path, acceptedOnly=False ):
             else:
                 result[foldername].extend(di.files)
             return result
+    
     elif ext.lower() == '.zip':
         foldername = basename + '_zip'
         try:
@@ -506,12 +532,14 @@ def hexdump( s, col=32 ):
 
 
 def cleanupString( s ):
-    # remove garbage
+    """Remove garbage from a bytestring and split it at 0-bytes."""
+    
     typ = type(s)
     if typ not in (bytes,bytearray):
         s = bytes( s )
-    t = s.strip( stripchars )
-    return t.split( bytes( "\x00", "ascii" ))[0]
+    s = s.strip( stripchars )
+    return s.split( bytes( "\x00", "ascii" ))[0]
+
 
 class ImageBuffer(list):
     """For debugging purposes mostly. Has a built in memory dump in
@@ -1964,9 +1992,11 @@ class GEOSDirEntry(object):
 class DiskImage(object):
 
     def getTrackOffsetList(self, sizelist ):
-        """calculate sectorOffset per Track, track Byte offstes and
-           sectors per track lists."""
-
+        """calculate
+            - sectorOffset per Track, [0,21,42,...]
+            - track Byte offstes and  [0, 5376, 10752,..]
+            - sectors per track lists.[0, 21, 21, 21,..] """
+        
         offset = 0
         sectorsize=256
         sectorOffsets = []
@@ -1983,6 +2013,7 @@ class DiskImage(object):
                     continue
                 trackByteOffsets.append( (sectorOffsets[track-1]) * sectorsize )
         return sectorOffsets, trackByteOffsets, sectorsPerTrack
+
 
     def readfile( self, path):
         f = open(path, 'rb')
@@ -2017,37 +2048,40 @@ class DiskImage(object):
         return error, data
 
     def getChain(self, t, s):
+        """Get a CBM track/sector chain as a binary string."""
+        
         error = ""
-        readSoFar = set()
+        trackSectorReadSoFar = set()
         # pdb.set_trace()
         result = []
         tr, sc = t, s
-        blocks = 0
         while True:
-            blocks += 1
-            err, b = self.getTS(tr, sc)
-            readSoFar.add( (tr,sc) )
+            err, block = self.getTS(tr, sc)
+            trackSectorReadSoFar.add( (tr,sc) )
             if err != "":
                 s = ''.join( result )
                 return err, s
-            if len(b) <= 2:
+            
+            if len(block) <= 2:
                 # pdb.set_trace()
                 break
-            tr = int(b[0])
-            sc = int(b[1])
+            tr = int(block[0])
+            sc = int(block[1])
+            
             if tr == 0:
-                result.append( b[2:sc+1] )
+                result.append( block[2:sc+1] )
                 break
-            elif (tr,sc) in readSoFar:
+            
+            elif (tr,sc) in trackSectorReadSoFar:
                 # circular link
                 # pdb.set_trace()
-                if len(b) > 2:
-                    result.append( b[2:] )
+                if len(block) > 2:
+                    result.append( block[2:] )
                 break
             elif tr > 80:
                 break
             else:
-                result.append( b[2:] )
+                result.append( block[2:] )
         return error, b''.join( result )
 
     def getDirEntries(self, t, s):
@@ -2095,7 +2129,7 @@ class DiskImage(object):
         print()
 
     def __init__(self, stream=None, filepath=None, tag=""):
-        
+        # pdb.set_trace()    
         # alternate path for streams
         self.tag = tag
         self.filepath = ""
@@ -2238,9 +2272,10 @@ def getFontChain( name, s, chainIndex ):
     #  4 - rel pointer to index table
     #  6 - rel pointer to character
     
+    falseResult = False, False
     
     if len(s) < 8:
-        return False, False
+        return falseResult
     
     uname = makeunicode(name)
     
@@ -2262,12 +2297,12 @@ def getFontChain( name, s, chainIndex ):
     bitstreamTableSize = fontHeight * bitstreamRowLength
     
     if len(bitstreamTable) == 0:
-        return False, False
+        return falseResult
 
     if (    fontHeight == 0
          or indextableOffset == 0
          or bitstreamOffset == 0):
-        return False, False
+        return falseResult
     
     if len(bitstreamTable) != bitstreamTableSize:
         print("SIZE MISMATCH:")
