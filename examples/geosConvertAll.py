@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
@@ -53,6 +52,7 @@ fontExportFolder = os.path.abspath("./geosFonts")
 
 if __name__ == '__main__':
 
+    # collect some stats - not yet used
     geosClasses = set()
     geosApplications = set()
     geosAuthors = set()
@@ -73,16 +73,19 @@ if __name__ == '__main__':
         dummy, parentFolder = os.path.split( folder )
 
         basefolder = os.path.join( exportFolder, parentFolder )
+        
+        if 1:
+            print( "\n\n\n" )
+            print( "#" * 120 )
+            print()
+            print( "SOURCE: %s" % fullpath )
+            print( "-" * 120)
+            print()
 
-        print( "\n\n\n" )
-        print( "#" * 120 )
-        print()
-        print( "SOURCE: %s" % fullpath )
-        print( "-" * 120)
-        print()
-
+        isdir = False
         if os.path.isdir(fullpath):
             files = iterateFolders( fullpath )
+            isdir = True
         else:
             # make a file behave like it came from the iterator
             typ = ext.lower()
@@ -94,7 +97,6 @@ if __name__ == '__main__':
             relpath = path.replace( fullpath, "" )
             if relpath and relpath[0] == "/":
                 relpath = relpath[1:]
-            
             
             result = []
             if typ in ('.gz', '.zip'):
@@ -135,15 +137,18 @@ if __name__ == '__main__':
                 #cvtfiles += 1
                 # elif typ == '.seq':
                 # pdb.set_trace()
+                
                 data = CBMConvertFile( path )
                 d = {'': [data.vlir]}
                 result.append( d )
                 cvtfiles += 1
+                
                 # check for cvt without extension here
                 # check sda, arc, ark...
                 # pass
             
-            # pdb.set_trace()
+            
+            pdb.set_trace()
             
             for item in result:
                 print("ITEM:", item)
@@ -207,3 +212,4 @@ if __name__ == '__main__':
                                 gde.prnt()
                                 gfh.prnt()
                                 print('-' * 80)
+
