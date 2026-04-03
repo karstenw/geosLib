@@ -2401,7 +2401,7 @@ if kwdbg:
                 typ = '.cvt'
 
             if kwlog or 1:
-                print("iterateFolders(9 YIELD FILE: %s" % filepath)
+                print("iterateFolders() YIELD FILE: %s" % filepath)
             yield typ, filepath
 
 
